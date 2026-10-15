@@ -1,0 +1,20 @@
+services:
+  shell:
+    build:
+      context: ..
+      dockerfile: apps/shell/Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - NGINX_HOST=localhost
+
+  template-mfe:
+    build:
+      context: ..
+      dockerfile: apps/_template-mfe/Dockerfile
+    ports:
+      - "3001:80"
+
+networks:
+  default:
+    name: telemedicine-frontend

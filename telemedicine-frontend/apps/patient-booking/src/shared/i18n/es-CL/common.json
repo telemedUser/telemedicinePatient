@@ -1,0 +1,13 @@
+{
+  "app.title": "Telemedicina",
+  "nav.myCare": "Mi atención",
+  "nav.help": "Ayuda",
+  "action.continue": "Continuar",
+  "action.back": "Volver",
+  "action.skip": "Omitir este paso",
+  "emergency.call": "Llama al 131 (SAMU)",
+  "dependent.bookingFor": "Reservando para {name}, {age}",
+  "dependent.acting": "Estás actuando como su {relationship}",
+  "dependent.bothRecorded": "ambas identidades quedan registradas",
+  "dependent.consentCentre": "Centro de consentimientos"
+}

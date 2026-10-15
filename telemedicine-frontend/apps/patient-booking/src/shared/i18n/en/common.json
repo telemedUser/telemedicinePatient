@@ -1,0 +1,13 @@
+{
+  "app.title": "Telemedicine",
+  "nav.myCare": "My care",
+  "nav.help": "Help",
+  "action.continue": "Continue",
+  "action.back": "Back",
+  "action.skip": "Skip this step",
+  "emergency.call": "Call 131 (SAMU)",
+  "dependent.bookingFor": "Booking for {name}, {age}",
+  "dependent.acting": "You are acting as their {relationship}",
+  "dependent.bothRecorded": "both identities are recorded",
+  "dependent.consentCentre": "Consent centre"
+}

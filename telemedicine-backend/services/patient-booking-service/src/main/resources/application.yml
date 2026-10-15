@@ -1,0 +1,13 @@
+server:
+  port: 8120
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: patient-booking-service
+
+# CORS origins allowed for local dev (frontend dev server / Vite proxy)
+patient-booking:
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3001,http://localhost:5173}
