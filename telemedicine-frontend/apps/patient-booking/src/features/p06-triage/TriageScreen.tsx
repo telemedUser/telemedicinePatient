@@ -21,7 +21,12 @@ export function TriageScreen() {
     setBusy(true);
     setError(false);
     try {
-      const res = await apiFetch("/triage/start", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      const symptoms = [...state.selectedSymptoms, ...state.availableSymptoms].map((s) => s.label);
+      const res = await apiFetch("/triage/start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reason: state.symptomText, symptoms }),
+      });
       if (!res.ok) throw new Error();
       const data = (await res.json()) as { sessionId: string; question: TriageQuestion };
       setTriage({ phase: "question", sessionId: data.sessionId, question: data.question });

@@ -66,6 +66,10 @@ project(':reporting-service').projectDir = file('services/reporting-service')
 project(':monitoring-service').projectDir = file('services/monitoring-service')
 project(':patient-booking-service').projectDir = file('services/patient-booking-service')
 
+// AI module
+include 'patient-ai'
+project(':patient-ai').projectDir = file('modules/patient-ai')
+
 // Templates & simulators
 include 'template-java', 'external-simulators'
 project(':template-java').projectDir = file('services/_template-java')

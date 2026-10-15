@@ -1,0 +1,14 @@
+plugins {
+    id 'io.spring.dependency-management'
+}
+
+description = 'Patient AI module: Hugging Face-backed triage question generation with rule-based fallback.'
+
+dependencies {
+    implementation project(':java-common-core')
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework:spring-web'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

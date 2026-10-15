@@ -5,6 +5,7 @@ import com.telemedicine.patientbooking.domain.BookingData;
 import com.telemedicine.patientbooking.domain.ConsentRecord;
 import com.telemedicine.patientbooking.domain.Doctor;
 import com.telemedicine.patientbooking.domain.Slot;
+import com.telemedicine.patientbooking.domain.SymptomDirectory;
 import com.telemedicine.patientbooking.triage.TriageProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,12 @@ public class BookingController {
 
     private final BookingData data;
     private final TriageProvider triage;
+    private final SymptomDirectory symptoms;
 
-    public BookingController(BookingData data, TriageProvider triage) {
+    public BookingController(BookingData data, TriageProvider triage, SymptomDirectory symptoms) {
         this.data = data;
         this.triage = triage;
+        this.symptoms = symptoms;
     }
 
     /* ---- P-02 Auth ---- */
@@ -66,7 +69,8 @@ public class BookingController {
     public Map<String, Object> extract(@RequestBody Map<String, String> body) {
         String text = body.getOrDefault("text", "");
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("chips", data.extractSymptoms(text));
+        out.put("chips", symptoms.match(text));
+        out.put("suggestions", symptoms.suggestions(text, 5));
         out.put("redFlag", data.hasRedFlag(text));
         return out;
     }
@@ -81,8 +85,21 @@ public class BookingController {
     /* ---- P-06 Triage ---- */
 
     @PostMapping("/triage/start")
-    public Map<String, Object> triageStart() {
-        return triage.startTriage();
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> triageStart(@RequestBody(required = false) Map<String, Object> body) {
+        String reason = "";
+        List<String> symptoms = new java.util.ArrayList<>();
+        if (body != null) {
+            Object r = body.get("reason");
+            if (r != null) reason = r.toString();
+            Object s = body.get("symptoms");
+            if (s instanceof List<?> list) {
+                for (Object item : list) {
+                    if (item != null) symptoms.add(item.toString());
+                }
+            }
+        }
+        return triage.startTriage(reason, symptoms);
     }
 
     @PostMapping("/triage/answer")

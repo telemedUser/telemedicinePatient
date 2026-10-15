@@ -55,9 +55,10 @@ export function ReasonScreen() {
             body: JSON.stringify({ text }),
           });
           if (!res.ok) throw new Error("extract failed");
-          const data = (await res.json()) as { chips: SymptomChip[] };
+          const data = (await res.json()) as { chips: SymptomChip[]; suggestions?: SymptomChip[] };
           setExtractError(false);
-          update({ selectedSymptoms: [], availableSymptoms: data.chips });
+          // Picked-up symptoms are auto-selected; related symptoms become suggestions.
+          update({ selectedSymptoms: data.chips, availableSymptoms: data.suggestions ?? [] });
         } catch {
           setExtractError(true);
         }

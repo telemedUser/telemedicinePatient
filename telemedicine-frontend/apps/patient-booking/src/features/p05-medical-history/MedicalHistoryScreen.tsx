@@ -9,8 +9,8 @@ import { AddMissingField } from "./AddMissingField";
 
 export function MedicalHistoryScreen() {
   useStepMark("P-05");
-  const { state, updateHistory, update } = useBooking();
-  const { goBack } = useWizard();
+  const { state, updateHistory } = useBooking();
+  const { goNext, goBack } = useWizard();
   const history = state.history;
   const subjectId = state.careSubject?.id;
 
@@ -54,8 +54,7 @@ export function MedicalHistoryScreen() {
 
   function confirm() {
     updateHistory({ confirmed: true });
-    update({ furthestStep: "P-05" });
-    // P-05 is the final in-scope step; mark complete.
+    goNext();
   }
 
   return (

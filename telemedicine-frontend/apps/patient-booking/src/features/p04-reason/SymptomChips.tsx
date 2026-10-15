@@ -45,7 +45,7 @@ export function SymptomChips({
               onClick={() => onRemove(c.id)}
               style={{ display: "inline-flex", alignItems: "center", gap: 4, height: 34, padding: "0 10px", borderRadius: 999, background: "#fff", border: "1px solid #a8cde8", color: "var(--color-heading)", font: "600 14px var(--font-family)", cursor: "pointer" }}
             >
-              {c.label} <span aria-hidden="true">\u00d7</span>
+              {c.label} <span aria-hidden="true">{"\u00d7"}</span>
             </button>
           ))}
         </div>
@@ -54,7 +54,7 @@ export function SymptomChips({
       {!error && available.length > 0 && (
         <>
           <div style={{ font: "600 13px var(--font-family)", color: "var(--color-muted)", marginBottom: 6 }}>
-            Tap to add any that apply
+            Also have any of these?
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {available.map((c) => (
