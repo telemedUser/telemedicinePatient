@@ -10,7 +10,7 @@ import { AddMissingField } from "./AddMissingField";
 export function MedicalHistoryScreen() {
   useStepMark("P-05");
   const { state, updateHistory, update } = useBooking();
-  const { goBack } = useWizard();
+  const { goNext, goBack } = useWizard();
   const history = state.history;
   const subjectId = state.careSubject?.id;
 
@@ -55,7 +55,8 @@ export function MedicalHistoryScreen() {
   function confirm() {
     updateHistory({ confirmed: true });
     update({ furthestStep: "P-05" });
-    // P-05 is the final in-scope step; mark complete.
+    // Advance to triage (P-06) and on through the rest of the booking flow.
+    goNext();
   }
 
   return (
@@ -114,18 +115,12 @@ export function MedicalHistoryScreen() {
           disabled={!resolved}
           style={{ flex: "1 1 200px", minHeight: 52 }}
         >
-          {history.confirmed ? "Confirmed" : "Confirm and continue"}
+          Confirm and continue
         </button>
         <button type="button" className="pb-btn" onClick={goBack} style={{ background: "transparent", color: "var(--color-primary)" }}>
           Back
         </button>
       </div>
-
-      {history.confirmed && (
-        <p role="status" style={{ marginTop: 16, color: "var(--color-success)" }}>
-          Medical history confirmed. This is the end of the current booking steps (P-01 to P-05).
-        </p>
-      )}
     </section>
   );
 }

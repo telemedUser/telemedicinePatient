@@ -1,33 +1,129 @@
-﻿:root,
+﻿/*
+ * Shared Connected Care design language (identical to the physician app).
+ * Figtree type, navy + blue palette, warm paper background, Material Symbols Rounded icons.
+ * The --bp-* variables are the single source of truth; the legacy --color-* / --font-family /
+ * --radius-* tokens used across the booking screens are aliased onto them so every screen adopts
+ * the unified look without being rewritten.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
+
+:root,
 [data-theme="patient"] {
-  --color-primary: #0079c8;
-  --color-primary-hover: #0068ac;
-  --color-heading: #10294a;
-  --color-text: #1d2433;
-  --color-muted: #5b6675;
-  --color-bg: #f6f5f2;
-  --color-surface: #ffffff;
-  --color-border: #e1e4e8;
-  --color-tint: #eaf4fb;
-  --color-danger: #c62828;
-  --color-danger-text: #8e1b1b;
-  --color-success: #1f7a3d;
-  --color-warning: #b4650a;
+  /* Brand */
+  --bp-navy: #10294a;
+  --bp-navy-2: #1e3a5f;
+  --bp-slate: #3a4453;
+  --bp-blue: #0079c8;
+  --bp-blue-dark: #0068ac;
+  --bp-blue-tint: #eaf4fb;
+  --bp-blue-tint-2: #f5fafe;
+
+  /* Text */
+  --bp-text: #1d2433;
+  --bp-text-2: #3a4453;
+  --bp-muted: #5b6675;
+  --bp-muted-2: #8a94a0;
+  --bp-on-dark: #c9d0d8;
+  --bp-on-dark-muted: #9aa3ae;
+
+  /* Surfaces */
+  --bp-paper: #e7e4dd;
+  --bp-surface: #ffffff;
+  --bp-surface-2: #f6f8fa;
+  --bp-nav: #e3e6ea;
+
+  /* Borders */
+  --bp-border: #d3d8de;
+  --bp-border-2: #e1e4e8;
+
+  /* Status */
+  --bp-ok: #14683d;
+  --bp-ok-2: #1b7f4c;
+  --bp-ok-bg: #e3f4ea;
+  --bp-warn: #8a4b00;
+  --bp-warn-bg: #fdf1e0;
+  --bp-danger: #a61b1b;
+  --bp-danger-bg: #fdf0f0;
+  --bp-info: #0068ac;
+  --bp-info-bg: #eaf4fb;
+
+  /* Radii & shadow */
+  --bp-radius: 10px;
+  --bp-radius-sm: 8px;
+  --bp-pill: 999px;
+  --bp-shadow: 0 1px 2px rgba(16, 41, 74, 0.06), 0 2px 8px rgba(16, 41, 74, 0.06);
+  --bp-shadow-lg: 0 8px 28px rgba(16, 41, 74, 0.14);
+
+  /* ---- Legacy booking-screen aliases, mapped onto the unified palette ---- */
+  --color-primary: var(--bp-blue);
+  --color-primary-hover: var(--bp-blue-dark);
+  --color-heading: var(--bp-navy);
+  --color-text: var(--bp-text);
+  --color-muted: var(--bp-muted);
+  --color-bg: var(--bp-paper);
+  --color-surface: var(--bp-surface);
+  --color-border: var(--bp-border-2);
+  --color-tint: var(--bp-blue-tint);
+  --color-danger: var(--bp-danger);
+  --color-danger-text: var(--bp-danger);
+  --color-success: var(--bp-ok);
+  --color-warning: var(--bp-warn);
   --font-family: Figtree, system-ui, -apple-system, sans-serif;
-  --radius-card: 16px;
-  --radius-pill: 999px;
+  --radius-card: var(--bp-radius);
+  --radius-pill: var(--bp-pill);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
+}
+
+body {
+  background: var(--bp-paper);
+  color: var(--bp-text);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--bp-blue);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--bp-blue-dark);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--bp-text);
+  letter-spacing: -0.01em;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bp-border) transparent;
 }
 
 .pb-visually-hidden {
@@ -67,12 +163,17 @@ body {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
+.pb-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
 
 .pb-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   padding: 22px;
+  box-shadow: var(--bp-shadow);
 }
 
 .pb-h1 {
@@ -81,5 +182,54 @@ body {
   line-height: 1.12;
   letter-spacing: -0.01em;
   margin: 0 0 12px;
-  font-size: clamp(28px, 2.4cqi + 20px, 44px);
+  font-size: clamp(26px, 2.4cqi + 18px, 44px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive: shrink container padding and prevent horizontal scroll */
+/* ------------------------------------------------------------------ */
+html,
+body {
+  overflow-x: hidden;
+}
+
+@media (max-width: 640px) {
+  .pb-card {
+    padding: 16px;
+    border-radius: var(--bp-radius-sm);
+  }
+  .pb-btn {
+    min-height: 46px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+  /* Any screen section drops to comfortable mobile gutters. */
+  section[data-screen] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Booking top chrome: wrap and compact the nav on small screens. */
+@media (max-width: 640px) {
+  .pb-chrome-bar {
+    flex-wrap: wrap;
+    gap: 10px !important;
+    padding: 10px 16px !important;
+  }
+  .pb-chrome-nav .pb-btn {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+}
+@media (max-width: 420px) {
+  /* Keep the brand on its own row; let the nav sit beneath it full-width. */
+  .pb-chrome-nav {
+    flex: 1 1 100%;
+    justify-content: stretch;
+  }
+  .pb-chrome-nav .pb-btn {
+    flex: 1;
+  }
 }

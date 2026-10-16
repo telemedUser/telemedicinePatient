@@ -75,7 +75,7 @@ export function BookingRoutes() {
         />
         <Route
           path={rel("P-08")}
-          element={<JourneyGuard requires={["authenticated", "careSubject", "doctorSlot"]}><Shell><DoctorSlotScreen /></Shell></JourneyGuard>}
+          element={<JourneyGuard requires={["authenticated", "careSubject", "doctor"]}><Shell><DoctorSlotScreen /></Shell></JourneyGuard>}
         />
         <Route
           path={rel("P-09")}

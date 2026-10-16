@@ -35,19 +35,20 @@ export function BookingChrome({ children }: { children: ReactNode }) {
         }}
       >
         <div
+          className="pb-chrome-bar"
           style={{
             maxWidth: 1120,
             margin: "0 auto",
             padding: "0 20px",
-            height: 64,
+            minHeight: 64,
             display: "flex",
             alignItems: "center",
             gap: 14,
           }}
         >
           <strong style={{ color: "var(--color-primary)", fontSize: 20 }}>{t("app.title")}</strong>
-          <div style={{ flex: 1 }} />
-          <nav aria-label="Main" style={{ display: "flex", gap: 8 }}>
+          <div className="pb-chrome-spacer" style={{ flex: 1 }} />
+          <nav aria-label="Main" className="pb-chrome-nav" style={{ display: "flex", gap: 8 }}>
             <button type="button" className="pb-btn pb-btn-secondary" onClick={() => navigate(BASE_PATH + "/home")}>
               {t("nav.myCare")}
             </button>
