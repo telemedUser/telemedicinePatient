@@ -1,0 +1,21 @@
+/* video-conference library styles (ported/namespaced from CareConnect) */
+.vc-shell { display: flex; flex-direction: column; gap: 12px; }
+.vc-remote { position: relative; background: #0b1726; border-radius: 16px; overflow: hidden; aspect-ratio: 16/10; min-height: 320px; }
+.vc-remote > video { width: 100%; height: 100%; object-fit: cover; background: #0b1726; }
+.vc-placeholder { position: absolute; inset: 0; display: grid; place-items: center; color: #9fb3c8; font: 500 15px/1.4 system-ui, sans-serif; pointer-events: none; }
+.vc-local { position: absolute; right: 12px; bottom: 12px; width: 150px; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden; border: 2px solid rgba(255,255,255,.4); background: #09111c; }
+.vc-local > video { width: 100%; height: 100%; object-fit: cover; }
+.vc-controls { display: flex; gap: 10px; justify-content: center; }
+.vc-controls button { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid #c9d0d8; background: #fff; color: #10294a; cursor: pointer; font: 600 14px system-ui, sans-serif; }
+.vc-controls button.vc-muted { background: #fdecec; border-color: #f3c7c7; color: #b23b3b; }
+.vc-controls .vc-hangup { background: #d64545; border-color: #d64545; color: #fff; }
+.vc-status { text-align: center; font: 500 13px system-ui, sans-serif; color: #5a6b7b; }
+.vc-chat { display: flex; flex-direction: column; height: 100%; min-height: 240px; }
+.vc-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
+.vc-bubble { max-width: 80%; background: #eef3f8; border-radius: 12px; padding: 6px 10px; align-self: flex-start; }
+.vc-bubble.mine { align-self: flex-end; background: #d9ebfb; }
+.vc-bubble small { display: block; font-size: 11px; color: #6b7a89; }
+.vc-bubble time { display: block; font-size: 10px; color: #9aa7b4; text-align: right; }
+.vc-compose { display: flex; gap: 8px; padding: 8px; }
+.vc-compose input { flex: 1; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1.5px solid #c9d0d8; }
+.vc-compose button { min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #0079c8; color: #fff; cursor: pointer; }

@@ -33,6 +33,7 @@ import { FollowUpCompleteScreen } from "@/features/p31-follow-up-complete/Follow
 import { WithdrawConsentScreen } from "@/features/p38-withdraw-consent/WithdrawConsentScreen";
 import { ConsentWithdrawnEndedScreen } from "@/features/p39-consent-withdrawn-ended/ConsentWithdrawnEndedScreen";
 import { ConsultationDayStub } from "@/features/consultation-day-stub/ConsultationDayStub";
+import { VideoConsultationScreen } from "@/features/consultation-video/VideoConsultationScreen";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -112,6 +113,7 @@ export function BookingRoutes() {
         <Route path="withdraw-consent" element={<JourneyGuard requires={["authenticated"]}><Shell><WithdrawConsentScreen /></Shell></JourneyGuard>} />
         <Route path="consent-ended" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsentWithdrawnEndedScreen /></Shell></JourneyGuard>} />
         <Route path="consultation-day" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsultationDayStub /></Shell></JourneyGuard>} />
+        <Route path="video-consultation" element={<JourneyGuard requires={["authenticated"]}><Shell><VideoConsultationScreen /></Shell></JourneyGuard>} />
 
         {/* Final-batch: public link-entry (no auth guard) */}
         <Route path="find-appointment" element={<Shell><FindAppointmentScreen /></Shell>} />

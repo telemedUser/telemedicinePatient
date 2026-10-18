@@ -65,6 +65,8 @@ project(':survey-service').projectDir = file('services/survey-service')
 project(':reporting-service').projectDir = file('services/reporting-service')
 project(':monitoring-service').projectDir = file('services/monitoring-service')
 project(':patient-booking-service').projectDir = file('services/patient-booking-service')
+include 'video-consultation-service'
+project(':video-consultation-service').projectDir = file('services/video-consultation-service')
 
 // Templates & simulators
 include 'template-java', 'external-simulators'

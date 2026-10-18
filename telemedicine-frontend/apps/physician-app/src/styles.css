@@ -1,0 +1,34 @@
+:root { --heading: #10294a; --primary: #0079c8; --muted: #5a6b7b; --border: #e1e6ec; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif; color: var(--heading); background: #f4f6f9; }
+.phys-app { min-height: 100vh; display: flex; flex-direction: column; }
+.phys-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 20px; height: 60px; background: #fff; border-bottom: 1px solid var(--border); }
+.phys-brand { display: flex; align-items: center; gap: 8px; color: var(--primary); }
+.phys-brand span { color: var(--muted); font-weight: 500; }
+.phys-room { font-size: 14px; color: var(--muted); }
+.phys-workspace { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; padding: 20px; max-width: 1280px; margin: 0 auto; width: 100%; }
+.phys-video { min-width: 0; }
+.phys-panel { background: #fff; border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column; height: 560px; overflow: hidden; }
+.phys-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.phys-tabs button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border: 0; background: transparent; cursor: pointer; font: 600 13px system-ui; color: var(--muted); }
+.phys-tabs button.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+.phys-scroll { flex: 1; overflow-y: auto; padding: 14px; }
+.phys-section { margin-bottom: 16px; }
+.phys-section h3 { margin: 0 0 6px; font-size: 14px; color: var(--heading); }
+.phys-section p { margin: 0; color: #3a4453; font-size: 14px; }
+.phys-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.phys-chips span { background: #eef3f8; border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--heading); }
+.phys-kv { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; font-size: 14px; border-bottom: 1px solid #f0f3f6; }
+.phys-kv span { color: var(--muted); }
+.phys-allergy { display: flex; gap: 8px; background: #fdecec; border: 1px solid #f3c7c7; border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; color: #b23b3b; font-size: 13px; }
+.phys-notice { background: #fff8ec; border: 1px solid #f0d9a8; border-radius: 10px; padding: 10px; font-size: 13px; margin-bottom: 12px; }
+.phys-card { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+.phys-card h3 { margin: 0 0 10px; font-size: 14px; }
+.phys-card label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.phys-card input, .phys-card textarea { width: 100%; margin-top: 4px; padding: 8px 10px; border: 1.5px solid #c9d0d8; border-radius: 8px; font: 500 14px system-ui; }
+.phys-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.phys-actions .muted { font-size: 13px; color: var(--muted); }
+.phys-actions button { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 8px; cursor: pointer; font: 600 13px system-ui; margin-left: 8px; }
+.phys-actions .outline { background: #fff; border: 1.5px solid #c9d0d8; color: var(--heading); }
+.phys-actions .primary { background: var(--primary); border: 0; color: #fff; }
+.muted { color: var(--muted); }
