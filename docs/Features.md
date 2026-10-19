@@ -1,4 +1,4 @@
-# Telemedicine Patient — Features
+﻿# Telemedicine Patient — Features
 
 A functional overview of the patient-facing telemedicine platform: what it does, the
 end-to-end patient journey, and a feature catalog that ties each capability to the
@@ -161,6 +161,16 @@ its route. The shell hydrates journey state from the patient BFF on load
   slots, cover quote, appointments, and consents. It is a development mock, not a production
   Spring service.
 
+- **Backend (peer-to-peer video):** `services/video-consultation-service` — a real Spring
+  Boot + JPA/Flyway module on `:8130` (shared `telemedicine` DB). A `SignalHandler` WebSocket
+  relays WebRTC offer/answer/ICE and chat between the two peers in a room keyed by the
+  appointment reference, so the patient app and physician app join the same room and connect
+  directly. A clinical REST API (`/api`) ingests/reads patient context
+  (`/patients/{id}/context`) and reads/saves/finalizes the care plan
+  (`/consultations/{id}/care-plan`, `DRAFT` → `FINALIZED`). CORS is open to `:3001` and
+  `:3002`. It is **not** wired into the gateway or `docker-compose.yml` — it serves this
+  standalone path, not the Module Federation journey (which uses `video-service` `:8103`).
+
 > Relationship note: `patient-booking` + `patient-booking-api` form a self-contained demo of
 > the booking funnel. The six Module Federation patient MFEs above cover the live
 > consultation journey backed by the real Spring services through the gateway. They are
@@ -252,6 +262,7 @@ Domain services (profile `domain`, ports 8101–8110):
 | reporting-service | 8109 | `/api/v1/reporting/**` |
 | monitoring-service | 8110 | `/api/v1/monitoring/**` |
 | patient-booking-service | — | registered in Gradle; not published in `docker-compose.yml` |
+| video-consultation-service | 8130 | not in gateway/`docker-compose.yml`; standalone peer-to-peer video + clinical API (see standalone booking section) |
 
 Platform services (profile `platform`):
 

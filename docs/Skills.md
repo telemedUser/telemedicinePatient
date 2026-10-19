@@ -1,4 +1,4 @@
-# Telemedicine Patient — Skills & Onboarding
+﻿# Telemedicine Patient — Skills & Onboarding
 
 What you need to know to work in the `telemedicinePatient` mono-workspace: the tech stack,
 the concepts the codebase assumes you understand, where things live, and how to build, run,
@@ -84,7 +84,9 @@ telemedicinePatient/
 
 `waiting-room-service`, `identity-service`, `video-service`, `telemetry-service`,
 `clinical-docs-service`, `notification-service`, `integration-service`, `survey-service`,
-`reporting-service`, `monitoring-service`, `patient-booking-service`, plus platform
+`reporting-service`, `monitoring-service`, `patient-booking-service`,
+`video-consultation-service` (`:8130`, standalone peer-to-peer video + clinical API; not in
+the gateway or compose), plus platform
 (`config-service`, `audit-service`, `scheduler-service`) and `external-simulators`. Ports and
 routes are in [Features.md](./Features.md).
 
@@ -101,9 +103,9 @@ routes are in [Features.md](./Features.md).
 - Standalone: `patient-booking` (`:3001`, Vite app), `patient-booking-api` (Express mock),
   `_template-mfe` (`:3001` template).
 
-> Physician/admin MFE ports (3011–3013, 3021–3025) are documented in
-> `telemedicine-platform/docs/build-sequence.md`; patient MFE ports are verified against each
-> app's `vite.config.mts` and `apps/shell/public/config/mfe-manifest.json`.
+> All MFE ports are set in each app's `vite.config.mts` (and patient routes in
+> `apps/shell/public/config/mfe-manifest.json`). `telemedicine-platform/docs/build-sequence.md`
+> also lists the full port map.
 
 ---
 
