@@ -3,6 +3,10 @@
 > Purpose: give a fresh agent (new account/session) the full working context so work can
 > continue from the current step without re-discovery. Read this top-to-bottom first.
 > Last updated: current session end (after building P-10 rebuild + P-14→P-17 join flow).
+>
+> **Physician module** is a separate repo with its own handoff:
+> `c:\Users\anasin\Documents\telemedicine_docs\telemedicine_physician_integration\docs\AGENT-HANDOFF.md`
+> (physician-app :3015 + physician-service :8114; per-physician login done; next step D-01 home page).
 
 ---
 
