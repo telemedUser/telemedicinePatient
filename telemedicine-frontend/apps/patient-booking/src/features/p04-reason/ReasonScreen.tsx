@@ -31,6 +31,7 @@ export function ReasonScreen() {
   const [extractError, setExtractError] = useState(false);
   const [redFlag, setRedFlag] = useState<string | null>(null);
   const [dismissedFlag, setDismissedFlag] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isDependent = state.careSubject?.kind === "dependent";
@@ -55,9 +56,18 @@ export function ReasonScreen() {
             body: JSON.stringify({ text }),
           });
           if (!res.ok) throw new Error("extract failed");
-          const data = (await res.json()) as { chips: SymptomChip[] };
+          const data = (await res.json()) as {
+            pickedUp?: SymptomChip[];
+            chips?: SymptomChip[];
+            related?: SymptomChip[];
+          };
           setExtractError(false);
-          update({ selectedSymptoms: [], availableSymptoms: data.chips });
+          setDismissed(false);
+          // Auto-select the picked-up symptoms; related ones populate "Also have any of these?".
+          update({
+            selectedSymptoms: data.pickedUp ?? data.chips ?? [],
+            availableSymptoms: data.related ?? [],
+          });
         } catch {
           setExtractError(true);
         }
@@ -112,9 +122,9 @@ export function ReasonScreen() {
 
   return (
     <section data-screen="P-04" style={{ maxWidth: 680, margin: "0 auto", padding: "clamp(24px,5cqi,56px) 20px 48px" }}>
-      <h1 className="pb-h1">What's going on?</h1>
+      <h1 className="pb-h1">What brings you in today?</h1>
       <p style={{ fontSize: 16, color: "var(--color-muted)", margin: "0 0 20px" }}>
-        Describe your symptoms and we'll prepare them for your doctor.
+        The doctor reads this before joining.
       </p>
 
       <label htmlFor="reason" style={{ display: "block", font: "600 14px var(--font-family)", color: "var(--color-heading)", marginBottom: 6 }}>
@@ -131,7 +141,19 @@ export function ReasonScreen() {
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        <SymptomChips selected={sets.selected} available={sets.available} error={extractError} onAdd={onAdd} onRemove={onRemove} />
+        {!dismissed && (
+          <SymptomChips
+            selected={sets.selected}
+            related={sets.available}
+            error={extractError}
+            onAdd={onAdd}
+            onRemove={onRemove}
+            onDismiss={() => {
+              setDismissed(true);
+              update({ selectedSymptoms: [], availableSymptoms: [] });
+            }}
+          />
+        )}
         <DurationRadioGroup value={state.duration} onChange={setDuration} />
         <SeveritySlider value={state.severity} onChange={setSeverity} />
         {isDependent && <MeasurementsBlock value={state.measurements} onChange={setMeasurements} />}

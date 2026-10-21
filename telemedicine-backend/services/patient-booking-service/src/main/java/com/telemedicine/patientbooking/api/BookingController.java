@@ -81,8 +81,12 @@ public class BookingController {
     @PostMapping("/symptoms/extract")
     public Map<String, Object> extract(@RequestBody Map<String, String> body) {
         String text = body.getOrDefault("text", "");
+        var pickedUp = reference.extractSymptoms(text);
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("chips", reference.extractSymptoms(text));
+        // "chips" kept for backward compatibility; "pickedUp" + "related" power the P-04 panel.
+        out.put("chips", pickedUp);
+        out.put("pickedUp", pickedUp);
+        out.put("related", reference.relatedSymptoms(pickedUp));
         out.put("redFlag", reference.hasRedFlag(text));
         return out;
     }
@@ -148,14 +152,15 @@ public class BookingController {
     }
 
     @GetMapping("/doctors/{id}/slots")
-    public Map<String, Object> slots(@PathVariable String id) {
+    public Map<String, Object> slots(
+            @PathVariable String id, @RequestParam(required = false) String mode) {
         booking
                 .getDoctor(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor not found."));
-        return Map.of("slots", booking.slots(id));
+        return Map.of("slots", booking.slots(id, mode));
     }
 
-    /* ---- P-09 Cover quote (fixed fee = doctor price) ---- */
+    /* ---- P-09 Cover quote with breakdown (consultation fee − insurance voucher = total) ---- */
 
     @GetMapping("/cover/quote")
     public Map<String, Object> coverQuote(@RequestParam(required = false) String doctorId) {
@@ -163,10 +168,37 @@ public class BookingController {
         if (doctorId != null) {
             fee = booking.getDoctor(doctorId).map(Doctor::priceClp).orElse(800);
         }
-        return Map.of(
-                "feeClp", fee,
-                "currency", "INR",
-                "note", "Nothing is charged until you confirm on the next screen.");
+        // A fixed insurance voucher (~35% of the fee), rounded to a tidy figure, for the demo.
+        int voucher = (int) Math.round(fee * 0.35 / 10.0) * 10;
+        int total = Math.max(0, fee - voucher);
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("feeClp", fee); // legacy key = gross consultation fee
+        out.put("consultationFee", fee);
+        out.put("voucher", voucher);
+        out.put("voucherRef", "VCH-" + (doctorId == null ? "GEN" : doctorId.toUpperCase()));
+        out.put("total", total);
+        out.put("currency", "INR");
+        out.put("note", "Nothing is charged until you confirm on the next screen.");
+        return out;
+    }
+
+    /* ---- P-11 Mock payment confirm (records a payment, no real gateway) ---- */
+
+    @PostMapping("/payments/confirm")
+    public Map<String, Object> confirmPayment(@RequestBody Map<String, Object> body) {
+        // Dev-only mock: accept any method, return a payment reference and success. The real
+        // appointment write still happens via POST /appointments after this returns.
+        String method = String.valueOf(body.getOrDefault("method", "card"));
+        Object amount = body.getOrDefault("amount", 0);
+        String paymentRef =
+                "PAY-" + Long.toString(System.currentTimeMillis(), 36).toUpperCase();
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("status", "paid");
+        out.put("paymentRef", paymentRef);
+        out.put("method", method);
+        out.put("amount", amount);
+        out.put("currency", "INR");
+        return out;
     }
 
     /* ---- P-11 Create appointment ---- */
@@ -192,9 +224,10 @@ public class BookingController {
         Appointment appt =
                 booking.createAppointment(
                         body.get("careSubjectId"),
+                        body.get("careSubjectName"),
                         doctor,
                         slot,
-                        body.get("mode"),
+                        body.get("mode") != null ? body.get("mode") : slot.mode(),
                         body.get("reason"),
                         doctor.priceClp());
         return ResponseEntity.status(HttpStatus.CREATED).body(appt);

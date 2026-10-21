@@ -21,6 +21,9 @@ public class AppointmentEntity extends BaseEntity {
     @Column(name = "care_subject_id")
     private String careSubjectId;
 
+    @Column(name = "care_subject_name")
+    private String careSubjectName;
+
     @Column(name = "doctor_id", nullable = false)
     private String doctorId;
 
@@ -50,6 +53,14 @@ public class AppointmentEntity extends BaseEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCareSubjectName() {
+        return careSubjectName;
+    }
+
+    public void setCareSubjectName(String careSubjectName) {
+        this.careSubjectName = careSubjectName;
     }
 
     public String getCareSubjectId() {

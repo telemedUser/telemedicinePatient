@@ -42,6 +42,37 @@ public class DoctorEntity extends BaseEntity {
     @Column(columnDefinition = "text")
     private String bio;
 
+    @Column(name = "years_experience")
+    private int yearsExperience;
+
+    /** Short "Treats …" conditions line shown on the P-07 card. */
+    @Column(columnDefinition = "text")
+    private String treats;
+
+    @Column(name = "clinic")
+    private String clinic;
+
+    /** Comma-separated consultation modes offered, e.g. {@code "video,audio"}. */
+    @Column(name = "modes")
+    private String modes;
+
+    @Column(name = "duration_min", nullable = false)
+    private int durationMin = 15;
+
+    @Column(name = "recommended", nullable = false)
+    private boolean recommended;
+
+    @Column(name = "in_network", nullable = false)
+    private boolean inNetwork = true;
+
+    /** Consultation hours free text, e.g. {@code "Mon–Fri 09:00–13:00 · 15:00–19:00; Sat 09:00–13:00"}. */
+    @Column(name = "hours")
+    private String hours;
+
+    /** Rating breakdown percentages as CSV 5★..1★, e.g. {@code "78,16,4,1,1"}. */
+    @Column(name = "rating_breakdown")
+    private String ratingBreakdown;
+
     protected DoctorEntity() {}
 
     public String getName() {
@@ -114,5 +145,77 @@ public class DoctorEntity extends BaseEntity {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public int getYearsExperience() {
+        return yearsExperience;
+    }
+
+    public void setYearsExperience(int yearsExperience) {
+        this.yearsExperience = yearsExperience;
+    }
+
+    public String getTreats() {
+        return treats;
+    }
+
+    public void setTreats(String treats) {
+        this.treats = treats;
+    }
+
+    public String getClinic() {
+        return clinic;
+    }
+
+    public void setClinic(String clinic) {
+        this.clinic = clinic;
+    }
+
+    public String getModes() {
+        return modes;
+    }
+
+    public void setModes(String modes) {
+        this.modes = modes;
+    }
+
+    public int getDurationMin() {
+        return durationMin;
+    }
+
+    public void setDurationMin(int durationMin) {
+        this.durationMin = durationMin;
+    }
+
+    public boolean isRecommended() {
+        return recommended;
+    }
+
+    public void setRecommended(boolean recommended) {
+        this.recommended = recommended;
+    }
+
+    public boolean isInNetwork() {
+        return inNetwork;
+    }
+
+    public void setInNetwork(boolean inNetwork) {
+        this.inNetwork = inNetwork;
+    }
+
+    public String getHours() {
+        return hours;
+    }
+
+    public void setHours(String hours) {
+        this.hours = hours;
+    }
+
+    public String getRatingBreakdown() {
+        return ratingBreakdown;
+    }
+
+    public void setRatingBreakdown(String ratingBreakdown) {
+        this.ratingBreakdown = ratingBreakdown;
     }
 }

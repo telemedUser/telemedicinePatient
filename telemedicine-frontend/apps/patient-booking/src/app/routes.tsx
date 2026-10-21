@@ -34,6 +34,10 @@ import { WithdrawConsentScreen } from "@/features/p38-withdraw-consent/WithdrawC
 import { ConsentWithdrawnEndedScreen } from "@/features/p39-consent-withdrawn-ended/ConsentWithdrawnEndedScreen";
 import { ConsultationDayStub } from "@/features/consultation-day-stub/ConsultationDayStub";
 import { VideoConsultationScreen } from "@/features/consultation-video/VideoConsultationScreen";
+import { ConfirmItsYouScreen } from "@/features/consultation-join/ConfirmItsYouScreen";
+import { ConsentsRecapScreen } from "@/features/consultation-join/ConsentsRecapScreen";
+import { DeviceCheckScreen } from "@/features/consultation-join/DeviceCheckScreen";
+import { WaitingRoomScreen } from "@/features/consultation-join/WaitingRoomScreen";
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -114,6 +118,13 @@ export function BookingRoutes() {
         <Route path="consent-ended" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsentWithdrawnEndedScreen /></Shell></JourneyGuard>} />
         <Route path="consultation-day" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsultationDayStub /></Shell></JourneyGuard>} />
         <Route path="video-consultation" element={<JourneyGuard requires={["authenticated"]}><Shell><VideoConsultationScreen /></Shell></JourneyGuard>} />
+        <Route path="consultation-video" element={<JourneyGuard requires={["authenticated"]}><Shell><VideoConsultationScreen /></Shell></JourneyGuard>} />
+
+        {/* Pre-join consultation flow (P-14 -> P-17) */}
+        <Route path="join/confirm" element={<JourneyGuard requires={["authenticated"]}><Shell><ConfirmItsYouScreen /></Shell></JourneyGuard>} />
+        <Route path="join/consents" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsentsRecapScreen /></Shell></JourneyGuard>} />
+        <Route path="join/device-check" element={<JourneyGuard requires={["authenticated"]}><Shell><DeviceCheckScreen /></Shell></JourneyGuard>} />
+        <Route path="join/waiting-room" element={<JourneyGuard requires={["authenticated"]}><Shell><WaitingRoomScreen /></Shell></JourneyGuard>} />
 
         {/* Final-batch: public link-entry (no auth guard) */}
         <Route path="find-appointment" element={<Shell><FindAppointmentScreen /></Shell>} />

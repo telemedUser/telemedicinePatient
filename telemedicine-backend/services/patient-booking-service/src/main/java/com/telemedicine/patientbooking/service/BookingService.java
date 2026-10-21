@@ -15,7 +15,9 @@ import com.telemedicine.patientbooking.domain.DoctorEntity;
 import com.telemedicine.patientbooking.domain.DoctorRepository;
 import com.telemedicine.patientbooking.domain.Slot;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -97,23 +99,61 @@ public class BookingService {
                 .toList();
     }
 
-    /** Deterministic slot grid for a doctor; no slot table needed. */
+    /** All slots for a doctor across the next 7 days, for both video and audio (P-08). */
     public List<Slot> slots(String doctorId) {
-        Map<String, int[]> offsets =
+        return slots(doctorId, null);
+    }
+
+    /**
+     * Deterministic 7-day slot grid for a doctor, optionally filtered by mode. No slot table is
+     * needed; slots are generated from a per-doctor seed so they are stable within a run. Each day
+     * gets a handful of clock times; the frontend groups them by day and offers a video/audio
+     * toggle (both modes share the same times).
+     */
+    public List<Slot> slots(String doctorId, String mode) {
+        // Per-doctor base hour and which of the next 7 days have availability.
+        Map<String, int[]> dayPlan =
                 Map.of(
-                        "doc-khanna", new int[] {2, 3, 5, 26, 28},
-                        "doc-nair", new int[] {27, 29, 31, 50},
-                        "doc-reddy", new int[] {1, 4, 6, 24},
-                        "doc-iyer", new int[] {2, 4, 48, 52});
-        int[] hrs = offsets.getOrDefault(doctorId, new int[] {2, 24, 48});
-        Instant base = Instant.now().truncatedTo(ChronoUnit.HOURS);
+                        // {firstHour, ...clock hours...} then day availability is derived below.
+                        "doc-khanna", new int[] {9, 11, 14, 16, 17},
+                        "doc-nair", new int[] {10, 12, 15, 18},
+                        "doc-reddy", new int[] {9, 13, 16},
+                        "doc-iyer", new int[] {9, 10, 11, 15});
+        int[] clockHours = dayPlan.getOrDefault(doctorId, new int[] {9, 12, 15});
+        // Which day-offsets (0=today .. 6) are open, varied per doctor so counts differ like the UI.
+        Map<String, int[]> openDays =
+                Map.of(
+                        "doc-khanna", new int[] {0, 1, 3, 4, 5, 6},
+                        "doc-nair", new int[] {0, 1, 2, 4, 6},
+                        "doc-reddy", new int[] {0, 2, 3, 5},
+                        "doc-iyer", new int[] {1, 2, 3, 4, 5});
+        int[] days = openDays.getOrDefault(doctorId, new int[] {0, 1, 2, 3, 4});
+
+        ZoneOffset zone = ZoneOffset.UTC;
+        LocalDate today = LocalDate.now(zone);
+        Instant now = Instant.now();
+        List<String> modes =
+                (mode == null || mode.isBlank()) ? List.of("video", "audio") : List.of(mode);
+
         List<Slot> result = new ArrayList<>();
-        for (int i = 0; i < hrs.length; i++) {
-            result.add(
-                    new Slot(
-                            doctorId + "-s" + (i + 1),
-                            base.plus(hrs[i], ChronoUnit.HOURS).toString(),
-                            "video"));
+        for (int d : days) {
+            LocalDate date = today.plusDays(d);
+            // Vary how many times are open on a given day so day chips show different counts.
+            int times = Math.max(1, clockHours.length - (d % 3));
+            for (int h = 0; h < times; h++) {
+                Instant start =
+                        date.atTime(LocalTime.of(clockHours[h % clockHours.length], (h % 2) * 40))
+                                .toInstant(zone);
+                if (start.isBefore(now)) {
+                    continue; // don't offer times already past today
+                }
+                for (String m : modes) {
+                    // Deterministic id from day+slot-index+mode so a mode-filtered fetch and the
+                    // unfiltered lookup (used when creating the appointment) produce the same id.
+                    String id = doctorId + "-" + m + "-d" + d + "s" + h;
+                    result.add(new Slot(id, start.toString(), m));
+                }
+            }
         }
         return result;
     }
@@ -144,6 +184,7 @@ public class BookingService {
     @Transactional
     public Appointment createAppointment(
             String careSubjectId,
+            String careSubjectName,
             Doctor doctor,
             Slot slot,
             String mode,
@@ -161,6 +202,7 @@ public class BookingService {
         entity.setId(reference);
         entity.setStatus("confirmed");
         entity.setCareSubjectId(careSubjectId);
+        entity.setCareSubjectName(careSubjectName);
         entity.setDoctorId(doctor.id());
         entity.setSlotId(slot.id());
         entity.setSlotStartsAt(slot.startsAt());
@@ -170,7 +212,12 @@ public class BookingService {
         entity.setBookedAt(bookedAt);
         appointmentRepository.save(entity);
 
-        publishAppointmentCreated(entity, careSubjectId, slot);
+        // Prefer the human name for the physician worklist; fall back to the care-subject id.
+        String patientRef =
+                (careSubjectName != null && !careSubjectName.isBlank())
+                        ? careSubjectName
+                        : careSubjectId;
+        publishAppointmentCreated(entity, patientRef, slot);
         return toAppointment(entity, doctor);
     }
 
@@ -278,10 +325,19 @@ public class BookingService {
     }
 
     private static Doctor toDoctor(DoctorEntity e) {
-        List<String> languages =
-                (e.getLanguages() == null || e.getLanguages().isBlank())
-                        ? List.of()
-                        : Arrays.stream(e.getLanguages().split(",")).map(String::trim).toList();
+        List<String> languages = csvToList(e.getLanguages());
+        List<String> modes =
+                (e.getModes() == null || e.getModes().isBlank())
+                        ? List.of("video", "audio")
+                        : csvToList(e.getModes());
+        List<Integer> breakdown =
+                (e.getRatingBreakdown() == null || e.getRatingBreakdown().isBlank())
+                        ? List.of(78, 16, 4, 1, 1)
+                        : Arrays.stream(e.getRatingBreakdown().split(","))
+                                .map(String::trim)
+                                .map(Integer::parseInt)
+                                .toList();
+        int durationMin = e.getDurationMin() > 0 ? e.getDurationMin() : 15;
         return new Doctor(
                 e.getId(),
                 e.getName(),
@@ -292,7 +348,22 @@ public class BookingService {
                 e.getMode(),
                 e.getPriceClp(),
                 languages,
-                e.getBio());
+                e.getBio(),
+                e.getYearsExperience(),
+                e.getTreats(),
+                e.getClinic(),
+                modes,
+                durationMin,
+                e.isRecommended(),
+                e.isInNetwork(),
+                e.getHours(),
+                breakdown);
+    }
+
+    private static List<String> csvToList(String csv) {
+        return (csv == null || csv.isBlank())
+                ? List.of()
+                : Arrays.stream(csv.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
     }
 
     private static ConsentRecord toConsent(ConsentEntity e) {

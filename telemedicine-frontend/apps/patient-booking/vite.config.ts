@@ -8,6 +8,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      // Map the CSS subpath first (more specific), then the package root. Order matters:
+      // Vite applies the first matching alias, so the bare-name entry must come after.
+      "@telemedicine/video-conference/styles.css": path.resolve(
+        __dirname,
+        "../../packages/video-conference/src/styles.css",
+      ),
       "@telemedicine/video-conference": path.resolve(__dirname, "../../packages/video-conference/src/index.ts"),
     },
   },

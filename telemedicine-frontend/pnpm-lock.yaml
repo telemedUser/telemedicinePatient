@@ -600,6 +600,12 @@ importers:
 
   apps/patient-booking:
     dependencies:
+      '@telemedicine/video-conference':
+        specifier: workspace:*
+        version: link:../../packages/video-conference
+      lucide-react:
+        specifier: ^0.456.0
+        version: 0.456.0(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -661,6 +667,40 @@ importers:
       express:
         specifier: ^4.21.1
         version: 4.22.3
+
+  apps/physician-app:
+    dependencies:
+      '@telemedicine/video-conference':
+        specifier: workspace:*
+        version: link:../../packages/video-conference
+      lucide-react:
+        specifier: ^0.456.0
+        version: 0.456.0(react@18.3.1)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^6.28.0
+        version: 6.30.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.11
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.1
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.3
+        version: 4.7.0(vite@5.4.21(@types/node@26.6.5)(terser@5.51.2))
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
+      vite:
+        specifier: ^5.4.10
+        version: 5.4.21(@types/node@26.6.5)(terser@5.51.2)
 
   apps/physician-shell:
     dependencies:
@@ -987,6 +1027,25 @@ importers:
       react:
         specifier: ^18.3.1
         version: 18.3.1
+
+  packages/video-conference:
+    dependencies:
+      lucide-react:
+        specifier: ^0.456.0
+        version: 0.456.0(react@18.3.1)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.11
+        version: 18.3.31
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
 
   tools/mfe-generator: {}
 
@@ -4828,6 +4887,11 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lucide-react@0.456.0:
+    resolution: {integrity: sha512-DIIGJqTT5X05sbAsQ+OhA8OtJYyD4NsEMCA/HQW/Y6ToPQ7gwbtujIoeAaup4HpHzV35SQOarKAWH8LYglB6eA==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
   luxon@3.7.2:
     resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
@@ -10821,6 +10885,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-react@0.456.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   luxon@3.7.2: {}
 

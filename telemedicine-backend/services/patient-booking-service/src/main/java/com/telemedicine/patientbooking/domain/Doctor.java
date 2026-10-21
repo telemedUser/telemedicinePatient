@@ -12,5 +12,14 @@ public record Doctor(
         String mode,
         int priceClp,
         List<String> languages,
-        String bio
+        String bio,
+        int yearsExperience,
+        String treats,
+        String clinic,
+        List<String> modes,
+        int durationMin,
+        boolean recommended,
+        boolean inNetwork,
+        String hours,
+        List<Integer> ratingBreakdown
 ) {}

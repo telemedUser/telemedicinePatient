@@ -117,7 +117,7 @@ export interface AuthStateSnapshot {
 
 export type HistoryStatus = "idle" | "loading" | "loaded" | "empty" | "error";
 
-export type ConsultationMode = "video" | "in-person";
+export type ConsultationMode = "video" | "audio";
 
 export interface TriageQuestion {
   id: string;
@@ -159,6 +159,15 @@ export interface Doctor {
   priceClp: number;
   languages?: string[];
   bio?: string;
+  yearsExperience?: number;
+  treats?: string;
+  clinic?: string;
+  modes?: ConsultationMode[];
+  durationMin?: number;
+  recommended?: boolean;
+  inNetwork?: boolean;
+  hours?: string;
+  ratingBreakdown?: number[];
 }
 
 export interface Slot {
@@ -171,6 +180,10 @@ export interface CoverQuote {
   feeClp: number;
   currency: string;
   note: string;
+  consultationFee?: number;
+  voucher?: number;
+  voucherRef?: string;
+  total?: number;
 }
 
 export type AppointmentStatus = "confirmed" | "cancelled" | "completed";
@@ -220,6 +233,7 @@ export interface BookingState {
   specialtyFilter: string;
   selectedDoctor: Doctor | null;
   selectedSlot: Slot | null;
+  selectedMode: ConsultationMode;
   coverQuote: CoverQuote | null;
   appointmentRef: string | null;
   authorityAttestation: AuthorityAttestation | null;
@@ -243,6 +257,7 @@ export function createInitialBookingState(): BookingState {
     specialtyFilter: "all",
     selectedDoctor: null,
     selectedSlot: null,
+    selectedMode: "video",
     coverQuote: null,
     appointmentRef: null,
     authorityAttestation: null,

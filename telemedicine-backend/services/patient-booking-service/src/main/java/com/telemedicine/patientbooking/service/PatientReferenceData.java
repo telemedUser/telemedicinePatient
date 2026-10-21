@@ -3,7 +3,6 @@ package com.telemedicine.patientbooking.service;
 import com.telemedicine.patientbooking.domain.Dependent;
 import com.telemedicine.patientbooking.domain.MedicalHistoryRecord;
 import com.telemedicine.patientbooking.domain.SymptomChip;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -22,6 +21,12 @@ public class PatientReferenceData {
     public static final String VALID_PASSWORD = "correct-horse";
     public static final String NO_RECORD_EMAIL = "norecord@example.in";
 
+    private final SymptomCatalog symptomCatalog;
+
+    public PatientReferenceData(SymptomCatalog symptomCatalog) {
+        this.symptomCatalog = symptomCatalog;
+    }
+
     public final Map<String, Object> patientMe =
             Map.of("id", "patient-1", "name", "Priya Sharma", "ageYears", 34);
 
@@ -29,25 +34,6 @@ public class PatientReferenceData {
             List.of(
                     new Dependent("dep-aarav", "Aarav Sharma", 7, "parent", true),
                     new Dependent("dep-ineligible", "Rohan Sharma (not covered)", 12, "parent", false));
-
-    private final List<SymptomChip> symptomLibrary =
-            List.of(
-                    new SymptomChip("sym-sore-throat", "Sore throat"),
-                    new SymptomChip("sym-fever", "Fever"),
-                    new SymptomChip("sym-cough", "Cough"),
-                    new SymptomChip("sym-headache", "Headache"),
-                    new SymptomChip("sym-fatigue", "Fatigue"));
-
-    private final List<String> redFlags =
-            List.of(
-                    "chest pain",
-                    "difficulty breathing",
-                    "trouble breathing",
-                    "shortness of breath",
-                    "severe bleeding",
-                    "fainting",
-                    "stroke",
-                    "suicidal");
 
     private final Map<String, List<MedicalHistoryRecord>> medicalHistory =
             Map.of(
@@ -71,23 +57,17 @@ public class PatientReferenceData {
         return medicalHistory.getOrDefault(id, List.of());
     }
 
+    /** Symptoms auto-detected in the text ("Symptoms we picked up"), negation-aware. */
     public List<SymptomChip> extractSymptoms(String text) {
-        String t = text == null ? "" : text.toLowerCase();
-        List<SymptomChip> hits = new ArrayList<>();
-        for (SymptomChip s : symptomLibrary) {
-            String first = s.label().toLowerCase().split(" ")[0];
-            if (t.contains(first)) {
-                hits.add(s);
-            }
-        }
-        if (hits.isEmpty()) {
-            return symptomLibrary.subList(0, 2);
-        }
-        return hits.size() > 15 ? hits.subList(0, 15) : hits;
+        return symptomCatalog.pickUp(text);
+    }
+
+    /** "Also have any of these?": symptoms related to those picked up, excluding the picked ones. */
+    public List<SymptomChip> relatedSymptoms(List<SymptomChip> pickedUp) {
+        return symptomCatalog.related(pickedUp);
     }
 
     public boolean hasRedFlag(String text) {
-        String t = text == null ? "" : text.toLowerCase();
-        return redFlags.stream().anyMatch(t::contains);
+        return symptomCatalog.hasRedFlag(text);
     }
 }

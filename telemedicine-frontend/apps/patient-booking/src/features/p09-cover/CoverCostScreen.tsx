@@ -5,8 +5,8 @@ import { useWizard } from "@/shared/wizard/useWizard";
 import { useStepMark } from "@/shared/components/useStepMark";
 import type { CoverQuote } from "@/shared/types/booking";
 
-function clp(n: number) {
-  return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(n);
+function inr(n: number) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 }
 
 export function CoverCostScreen() {
@@ -38,9 +38,21 @@ export function CoverCostScreen() {
 
       {loading && <p role="status" style={{ color: "var(--color-muted)" }}>Calculating your cost…</p>}
       {!loading && quote && (
-        <div className="pb-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ font: "600 16px var(--font-family)", color: "var(--color-heading)" }}>Consultation fee</span>
-          <span style={{ font: "700 22px var(--font-family)", color: "var(--color-heading)" }}>{clp(quote.feeClp)}</span>
+        <div className="pb-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, color: "var(--color-text)" }}>
+            <span>Consultation fee</span>
+            <span>{inr(quote.consultationFee ?? quote.feeClp)}</span>
+          </div>
+          {quote.voucher ? (
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, color: "var(--color-success)" }}>
+              <span>Insurance voucher{quote.voucherRef ? ` ${quote.voucherRef}` : ""}</span>
+              <span>&#8211; {inr(quote.voucher)}</span>
+            </div>
+          ) : null}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 10, borderTop: "1px solid var(--color-border)" }}>
+            <span style={{ font: "700 16px var(--font-family)", color: "var(--color-heading)" }}>Total</span>
+            <span style={{ font: "700 22px var(--font-family)", color: "var(--color-heading)" }}>{inr(quote.total ?? quote.feeClp)}</span>
+          </div>
         </div>
       )}
 
