@@ -1,5 +1,9 @@
 # Telemedicine — Microservices + Microfrontends
 
+> **Continuing an in-progress build?** Read **[docs/AGENT-HANDOFF.md](./docs/AGENT-HANDOFF.md)** first —
+> it has the full current context: what's built (booking P-01→P-13 + join flow P-14→P-17), how to run
+> everything, product decisions, backend endpoints, known gotchas, and the pending video work.
+
 Base project for a telemedicine platform with independently deployable backend microservices and frontend microfrontends.
 
 ## Repositories
