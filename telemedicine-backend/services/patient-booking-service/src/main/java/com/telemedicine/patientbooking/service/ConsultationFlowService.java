@@ -39,9 +39,12 @@ public class ConsultationFlowService {
 
     private final Map<String, Flow> flows = new ConcurrentHashMap<>();
     private final EventPublisher eventPublisher;
+    private final ConsultationContextPublisher contextPublisher;
 
-    public ConsultationFlowService(EventPublisher eventPublisher) {
+    public ConsultationFlowService(
+            EventPublisher eventPublisher, ConsultationContextPublisher contextPublisher) {
         this.eventPublisher = eventPublisher;
+        this.contextPublisher = contextPublisher;
     }
 
     private Flow flow(String ref) {
@@ -86,6 +89,8 @@ public class ConsultationFlowService {
                         EventTypes.DEVICE_TEST_COMPLETED,
                         new DeviceTestCompleted(ref, pref, cameraOk, micOk, bandwidthKbps, f.readyAt))
                 .whenComplete((ok, err) -> logPublish("DeviceTestCompleted", ref, err));
+        // Publish the full review context (D-03) for the physician the moment the patient is ready.
+        contextPublisher.publishFor(ref, pref);
     }
 
     /* ---- P-17 waiting-room status ---- */

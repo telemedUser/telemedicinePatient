@@ -57,6 +57,19 @@ public class PatientReferenceData {
         return medicalHistory.getOrDefault(id, List.of());
     }
 
+    /** Best-effort age for a care subject (the signed-in patient or a dependent). 0 when unknown. */
+    public int ageOf(String careSubjectId) {
+        if (careSubjectId == null || "patient-1".equals(careSubjectId)) {
+            Object age = patientMe.get("ageYears");
+            return age instanceof Integer i ? i : 0;
+        }
+        return dependents.stream()
+                .filter(d -> careSubjectId.equals(d.id()))
+                .map(Dependent::ageYears)
+                .findFirst()
+                .orElse(0);
+    }
+
     /** Symptoms auto-detected in the text ("Symptoms we picked up"), negation-aware. */
     public List<SymptomChip> extractSymptoms(String text) {
         return symptomCatalog.pickUp(text);
