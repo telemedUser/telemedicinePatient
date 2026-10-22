@@ -91,7 +91,7 @@ export function HomeScreen() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {upcoming.map((a, idx) => (
-                  <div key={a.reference} className="pb-card" style={{ padding: 0, overflow: "hidden" }}>
+                  <div key={a.reference} className="pb-card" style={{ padding: 0, overflow: "visible" }}>
                     <div style={{ display: "flex", gap: 12, padding: "16px 18px" }}>
                       <span aria-hidden="true" style={{ flex: "none", width: 40, height: 40, borderRadius: "50%", background: "var(--color-tint)", color: "#0068ac", display: "grid", placeItems: "center", font: "700 13px var(--font-family)" }}>
                         {initials(a.doctor.name)}

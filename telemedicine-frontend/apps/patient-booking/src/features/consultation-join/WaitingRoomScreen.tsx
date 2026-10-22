@@ -20,7 +20,9 @@ export function WaitingRoomScreen() {
   const ref = params.get("ref") || state.appointmentRef || "CONS-DEMO";
 
   const [appt, setAppt] = useState<Appointment | null>(null);
-  const [doctorReady, setDoctorReady] = useState(false);
+  // On-demand testing: the patient can join the room immediately without waiting for the doctor to
+  // "open" it. (Was gated on doctorReady from /consultations/{ref}/status.)
+  const [doctorReady, setDoctorReady] = useState(true);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {

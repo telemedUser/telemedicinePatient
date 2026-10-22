@@ -43,4 +43,6 @@ export interface VideoConfig {
   apiBase: string;
   /** WebSocket signaling URL, e.g. ws://localhost:8130/ws */
   wsUrl: string;
+  /** ICE servers (STUN + optional TURN) for NAT traversal across networks (not just LAN). */
+  iceServers: RTCIceServer[];
 }

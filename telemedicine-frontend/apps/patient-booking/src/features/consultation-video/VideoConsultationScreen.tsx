@@ -29,7 +29,7 @@ export function VideoConsultationScreen() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", gap: 20, alignItems: "start" }}>
-        <VideoCall roomId={roomId} role="patient" wsUrl={config.wsUrl} />
+        <VideoCall roomId={roomId} role="patient" wsUrl={config.wsUrl} iceServers={config.iceServers} />
         <aside className="pb-card" style={{ padding: 0, overflow: "hidden", height: 460, display: "flex", flexDirection: "column" }}>
           <div style={{ font: "600 14px var(--font-family)", color: "var(--color-heading)", padding: "12px 14px", borderBottom: "1px solid var(--color-border)" }}>
             Chat with your doctor

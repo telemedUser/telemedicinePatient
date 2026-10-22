@@ -1,0 +1,12 @@
+# Keep the Docker build context small and deterministic. The Dockerfile copies only
+# settings.gradle/build.gradle/gradle.properties + gradle/ build-logic/ shared/ gateway/
+# platform/ bff/ services/ simulators/, and builds inside the gradle image.
+**/.gradle
+**/build
+**/node_modules
+**/.git
+**/*.log
+docs
+deploy/kubernetes
+.idea
+.vscode

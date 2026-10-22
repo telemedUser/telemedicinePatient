@@ -87,10 +87,21 @@ export function useWebRtcCall(opts: UseWebRtcCallOptions): WebRtcCallState {
           const msg = JSON.parse(event.data);
           if (msg.type === "chat") return;
           try {
-            if (msg.type === "peer-joined" && role === "doctor" && !pc.remoteDescription) {
-              const offer = await pc.createOffer();
-              await pc.setLocalDescription(offer);
-              send({ type: "offer", sdp: offer });
+            if (msg.type === "peer-joined") {
+              // Robust to join order: the answerer announces itself (peer-here) so the doctor can
+              // offer even when it joined first; the doctor offers on peer-joined or peer-here.
+              if (role !== "doctor") send({ type: "peer-here", role });
+              if (role === "doctor" && !pc.remoteDescription) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                send({ type: "offer", sdp: offer });
+              }
+            } else if (msg.type === "peer-here") {
+              if (role === "doctor" && !pc.remoteDescription) {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                send({ type: "offer", sdp: offer });
+              }
             } else if (msg.type === "offer") {
               await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
               for (const c of pendingCandidates.current) await pc.addIceCandidate(c);

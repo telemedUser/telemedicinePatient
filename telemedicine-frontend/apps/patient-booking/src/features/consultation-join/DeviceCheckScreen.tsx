@@ -159,11 +159,11 @@ export function DeviceCheckScreen() {
           {/* Right: checklist */}
           <div>
             <div className="pb-card" style={{ padding: 0, overflow: "hidden" }}>
-              <DeviceRow icon="\uD83D\uDCF9" name="Camera" detail="Front camera" state={camera} />
-              <DeviceRow icon="\uD83C\uDFA4" name="Microphone" detail="Built-in microphone" state={mic} />
-              <DeviceRow icon="\uD83D\uDD0A" name="Speaker" detail="Built-in speaker" state="ok" />
-              <DeviceRow icon="\uD83C\uDF10" name="Browser" detail={browserName()} state="ok" />
-              <DeviceRow icon="\uD83D\uDCF6" name="Connection" detail={`${downMbps} Mbps · ${rtt} ms · good for video`} state="ok" last />
+              <DeviceRow icon={"\uD83D\uDCF9"} name="Camera" detail="Front camera" state={camera} />
+              <DeviceRow icon={"\uD83C\uDFA4"} name="Microphone" detail="Built-in microphone" state={mic} />
+              <DeviceRow icon={"\uD83D\uDD0A"} name="Speaker" detail="Built-in speaker" state="ok" />
+              <DeviceRow icon={"\uD83C\uDF10"} name="Browser" detail={browserName()} state="ok" />
+              <DeviceRow icon={"\uD83D\uDCF6"} name="Connection" detail={`${downMbps} Mbps · ${rtt} ms · good for video`} state="ok" last />
             </div>
 
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: allOk ? "#e3f4ea" : "#fdf1e0", border: `1px solid ${allOk ? "#bfe6cd" : "#f0d9b5"}`, borderRadius: 12, padding: "12px 14px", marginTop: 14 }}>
