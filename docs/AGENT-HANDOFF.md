@@ -2,7 +2,7 @@
 
 > Purpose: give a fresh agent (new account/session) the full working context so work can
 > continue from the current step without re-discovery. Read this top-to-bottom first.
-> Last updated: current session end (after building P-10 rebuild + P-14→P-17 join flow).
+> Last updated: after AWS deployment (single-AZ) + video-conference wiring + post-deploy UI fixes.
 >
 > **Physician module** is a separate repo with its own handoff:
 > `c:\Users\anasin\Documents\telemedicine_docs\telemedicine_physician_integration\docs\AGENT-HANDOFF.md`
@@ -222,3 +222,46 @@ screens and beyond** — the in-call experience (P-18+), post-call documents (P-
 and making the **two-way video actually connect** (physician doctor-peer on :8130). When the user sends
 the next prototype screenshots, collect them all, then implement + wire backend, matching layout and
 keeping the Section 2 decisions. Start the video service and add the physician join when video is the focus.
+
+---
+
+## AWS deployment + video conferencing + UI fixes (latest session)
+
+Full platform is deployed to AWS (single-AZ, "get it up"). Authoritative guide:
+`c:\Users\anasin\Documents\telemedicine_docs\AWS-DEPLOYMENT-GUIDE.md`. The physician repo's
+`docs/AGENT-HANDOFF.md` §9–§10 has the complete provisioned-resource inventory (instance IDs, SGs,
+VPC endpoints, RDS, Caddy/CORS, build gotchas) — read that for the deploy details. Patient-side notes:
+
+**Live URLs:** patient app `https://patient.15-206-70-72.nip.io` (nip.io + Caddy auto-TLS on
+`tele-app` `15.206.70.72`). Logins: `priya@example.in`/`correct-horse` or blank/blank (dev mode).
+
+**Patient backend on AWS:** `patient-booking-service` (:8120, DB `patient_booking`) and
+`video-consultation-service` (:8130, signaling `/ws`, DB `telemedicine`) run on `tele-app`; Kafka/
+Redis/Consul on `tele-infra` (`172.31.42.42`); RDS `tele-db.c7q4waysk05b.ap-south-1.rds.amazonaws.com`.
+ECR images `patient-booking-service`, `video-consultation-service`, `patient-bff`, `patient-app`
+(all `0.1.0`). The patient SPA is built with prod `VITE_*` (wss://patient.15-206-70-72.nip.io/ws +
+TURN `turn:13.235.249.249:3478` user `telemedicine`/`ChangeMe_TurnSecret_123`).
+
+**Video conferencing (real WebRTC):** the `@telemedicine/video-conference` package (patient repo)
+does getUserMedia + RTCPeerConnection; signaling is `video-consultation-service` `SignalHandler`
+(`/ws`, rooms keyed by appointment ref). ICE = public STUN + the coturn TURN on `tele-turn`
+(`13.235.249.249`) so it traverses NAT off-LAN. The physician side has its own ported copy
+(`physician-app/src/video/*`, role `doctor`/offerer). Added a `peer-here` handshake so the call
+connects regardless of who joins first. `resolveVideoConfig`/`resolveIceServers` read `VITE_TURN_*`.
+
+**Post-deploy UI fixes (this session):**
+1. Device-check icons rendered as literal `\uD83D...` — `DeviceCheckScreen.tsx` emoji were JSX
+   attribute strings (no escape interpretation); changed to JS expressions `icon={"\uD83D\uDCF9"}`.
+2. "Manage" dropdown on My Care was clipped — `HomeScreen.tsx` appointment card `overflow: "hidden"`
+   → `"visible"`.
+3. `WaitingRoomScreen.tsx` `doctorReady` defaults to `true` so the patient can join on demand without
+   the doctor-opens-first handshake (TESTING ONLY — revert that line for real admit-first flow).
+
+**Seed a ready patient (live):** POST to `https://patient.15-206-70-72.nip.io/api`:
+`/appointments` (doctorId `doc-khanna`, a video slot, careSubjectId `patient-1`) → `/consultations/{ref}/otp/send`
+→ `/consultations/{ref}/otp/verify` (code `739214`) → `/consultations/{ref}/ready`. It then shows on
+the physician worklist (scoped `X-Physician-Id: doc-khanna`) as READY with the booked `scheduledAt`.
+
+**Deploy a FE change:** rebuild SPA (`corepack pnpm exec vite build --mode production` for patient;
+`nx build physician-app` for physician) → `docker build -f Dockerfile.patapp ...` → push to ECR →
+SSM `docker compose up -d --force-recreate patient-spa` on `tele-app`.
