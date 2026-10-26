@@ -1,6 +1,14 @@
 package com.telemedicine.patientbooking.service;
 
 import com.telemedicine.patientbooking.domain.SymptomChip;
+import com.telemedicine.patientbooking.domain.SymptomCatalogRepository;
+import com.telemedicine.patientbooking.domain.SymptomEntity;
+import com.telemedicine.patientbooking.domain.SymptomPhraseRepository;
+import com.telemedicine.patientbooking.domain.SymptomRelatedEntity;
+import com.telemedicine.patientbooking.domain.SymptomRelatedRepository;
+import com.telemedicine.patientbooking.domain.SymptomTriggerEntity;
+import com.telemedicine.patientbooking.domain.SymptomTriggerRepository;
+import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -8,6 +16,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,106 +27,79 @@ import org.springframework.stereotype.Component;
  * negation cue ("no", "without", "denies", "not") within a short window is NOT picked up, so
  * "No cough" does not add Cough.
  *
- * <p>This is deliberately a curated in-code catalog (not a DB table) — it is static reference data
- * read on every extract call, mirroring how the rest of {@link PatientReferenceData} is held.
+ * <p>The catalog data now lives in the database (tables {@code symptom_catalog},
+ * {@code symptom_trigger}, {@code symptom_related}, {@code symptom_phrase}, seeded by Flyway
+ * V112) instead of a hardcoded map. It is loaded once at startup into the same in-memory
+ * structures; all matching/negation logic is unchanged.
  */
 @Component
 public class SymptomCatalog {
 
+    private static final Logger log = LoggerFactory.getLogger(SymptomCatalog.class);
+
     /** One symptom in the directory. */
     public record Symptom(String id, String label, List<String> triggers, List<String> related) {}
 
-    private static final List<String> NEGATIONS =
-            List.of("no ", "not ", "without ", "denies ", "deny ", "negative for ", "no sign of ");
+    private final SymptomCatalogRepository catalogRepository;
+    private final SymptomTriggerRepository triggerRepository;
+    private final SymptomRelatedRepository relatedRepository;
+    private final SymptomPhraseRepository phraseRepository;
 
-    /** Red-flag phrases that raise the emergency interrupt (kept here so P-04 has one source). */
-    public static final List<String> RED_FLAGS =
-            List.of(
-                    "chest pain",
-                    "difficulty breathing",
-                    "trouble breathing",
-                    "shortness of breath",
-                    "severe bleeding",
-                    "fainting",
-                    "faint",
-                    "stroke",
-                    "suicidal",
-                    "numbness on one side",
-                    "slurred speech");
+    /** Negation cues loaded from the DB (kind = NEGATION). */
+    private volatile List<String> negations = List.of();
 
-    // Catalog. Order matters only for stable display. Related ids must exist in this map.
+    /** Red-flag phrases loaded from the DB (kind = RED_FLAG). */
+    private volatile List<String> redFlags = List.of();
+
+    /** Catalog in display order. Related ids reference other entries in this map. */
     private final Map<String, Symptom> byId = new LinkedHashMap<>();
 
-    public SymptomCatalog() {
-        add("sym-sore-throat", "Sore throat",
-                List.of("sore throat", "throat pain", "throat hurts", "scratchy throat"),
-                List.of("sym-painful-swallowing", "sym-swollen-glands", "sym-hoarse-voice", "sym-fever"));
-        add("sym-painful-swallowing", "Painful swallowing",
-                List.of("painful to swallow", "painful swallowing", "hurts to swallow", "difficulty swallowing"),
-                List.of("sym-sore-throat", "sym-swollen-glands"));
-        add("sym-fever", "Fever",
-                List.of("fever", "temperature", "febrile", "high temp", "38", "39", "40"),
-                List.of("sym-chills", "sym-sweats", "sym-headache", "sym-fatigue"));
-        add("sym-cough", "Cough",
-                List.of("cough", "coughing"),
-                List.of("sym-sore-throat", "sym-chest-congestion", "sym-shortness-breath", "sym-runny-nose"));
-        add("sym-headache", "Headache",
-                List.of("headache", "head ache", "migraine", "head hurts"),
-                List.of("sym-light-sensitivity", "sym-nausea", "sym-fever", "sym-fatigue"));
-        add("sym-fatigue", "Fatigue",
-                List.of("fatigue", "tired", "tiredness", "exhausted", "no energy", "lethargic"),
-                List.of("sym-fever", "sym-body-ache", "sym-headache"));
-        add("sym-runny-nose", "Runny nose",
-                List.of("runny nose", "running nose", "nasal", "congestion", "stuffy nose", "blocked nose"),
-                List.of("sym-cough", "sym-sneezing", "sym-sore-throat"));
-        add("sym-nausea", "Nausea",
-                List.of("nausea", "nauseous", "queasy", "feel sick", "vomit", "vomiting"),
-                List.of("sym-abdominal-pain", "sym-headache", "sym-fever"));
-        add("sym-abdominal-pain", "Abdominal pain",
-                List.of("abdominal pain", "stomach ache", "stomach pain", "belly pain", "tummy"),
-                List.of("sym-nausea", "sym-diarrhea", "sym-fever"));
-        add("sym-diarrhea", "Diarrhoea",
-                List.of("diarrhea", "diarrhoea", "loose stool", "loose motion"),
-                List.of("sym-abdominal-pain", "sym-nausea", "sym-fever"));
-        add("sym-rash", "Skin rash",
-                List.of("rash", "itchy skin", "hives", "skin irritation", "red spots"),
-                List.of("sym-itching", "sym-fever"));
-        add("sym-itching", "Itching",
-                List.of("itching", "itchy", "pruritus"),
-                List.of("sym-rash"));
-        add("sym-body-ache", "Body ache",
-                List.of("body ache", "body pain", "muscle ache", "aches and pains", "myalgia"),
-                List.of("sym-fever", "sym-fatigue", "sym-chills"));
-
-        // Secondary / "also have any of these" symptoms (less commonly typed, often suggested).
-        add("sym-swollen-glands", "Swollen glands",
-                List.of("swollen glands", "swollen lymph", "lump in neck"),
-                List.of("sym-sore-throat", "sym-fever"));
-        add("sym-hoarse-voice", "Hoarse voice",
-                List.of("hoarse", "hoarse voice", "lost voice", "raspy"),
-                List.of("sym-sore-throat", "sym-cough"));
-        add("sym-chills", "Chills",
-                List.of("chills", "shivering", "rigors"),
-                List.of("sym-fever", "sym-sweats"));
-        add("sym-sweats", "Sweats",
-                List.of("sweats", "sweating", "night sweats"),
-                List.of("sym-fever", "sym-chills"));
-        add("sym-light-sensitivity", "Light sensitivity",
-                List.of("light sensitivity", "sensitive to light", "photophobia"),
-                List.of("sym-headache"));
-        add("sym-sneezing", "Sneezing",
-                List.of("sneezing", "sneeze"),
-                List.of("sym-runny-nose"));
-        add("sym-chest-congestion", "Chest congestion",
-                List.of("chest congestion", "phlegm", "mucus", "chesty"),
-                List.of("sym-cough", "sym-shortness-breath"));
-        add("sym-shortness-breath", "Shortness of breath",
-                List.of("shortness of breath", "short of breath", "breathless", "wheezing"),
-                List.of("sym-cough", "sym-chest-congestion"));
+    public SymptomCatalog(
+            SymptomCatalogRepository catalogRepository,
+            SymptomTriggerRepository triggerRepository,
+            SymptomRelatedRepository relatedRepository,
+            SymptomPhraseRepository phraseRepository) {
+        this.catalogRepository = catalogRepository;
+        this.triggerRepository = triggerRepository;
+        this.relatedRepository = relatedRepository;
+        this.phraseRepository = phraseRepository;
     }
 
-    private void add(String id, String label, List<String> triggers, List<String> related) {
-        byId.put(id, new Symptom(id, label, triggers, related));
+    /** Load the catalog from the database into memory once the service starts. */
+    @PostConstruct
+    public synchronized void load() {
+        // Triggers grouped by symptom, preserving row order.
+        Map<String, List<String>> triggersBySymptom = new LinkedHashMap<>();
+        for (SymptomTriggerEntity t : triggerRepository.findAll()) {
+            triggersBySymptom.computeIfAbsent(t.getSymptomId(), k -> new ArrayList<>()).add(t.getPhrase());
+        }
+        // Related ids grouped by symptom, in seq order so suggestions keep their curated order.
+        Map<String, List<String>> relatedBySymptom = new LinkedHashMap<>();
+        for (SymptomRelatedEntity r : relatedRepository.findAllByOrderBySeqAsc()) {
+            relatedBySymptom
+                    .computeIfAbsent(r.getSymptomId(), k -> new ArrayList<>())
+                    .add(r.getRelatedSymptomId());
+        }
+
+        byId.clear();
+        for (SymptomEntity s : catalogRepository.findAllByOrderByDisplayOrderAsc()) {
+            byId.put(
+                    s.getId(),
+                    new Symptom(
+                            s.getId(),
+                            s.getLabel(),
+                            triggersBySymptom.getOrDefault(s.getId(), List.of()),
+                            relatedBySymptom.getOrDefault(s.getId(), List.of())));
+        }
+
+        this.redFlags = phraseRepository.findByKind("RED_FLAG").stream().map(p -> p.getPhrase()).toList();
+        this.negations = phraseRepository.findByKind("NEGATION").stream().map(p -> p.getPhrase()).toList();
+
+        log.info(
+                "Loaded symptom catalog from DB: {} symptoms, {} red-flags, {} negation cues",
+                byId.size(),
+                redFlags.size(),
+                negations.size());
     }
 
     public SymptomChip chip(String id) {
@@ -172,7 +155,7 @@ public class SymptomCatalog {
 
     public boolean hasRedFlag(String text) {
         String t = normalize(text);
-        return RED_FLAGS.stream().anyMatch(t::contains);
+        return redFlags.stream().anyMatch(t::contains);
     }
 
     /** True when any trigger phrase appears in the text and is not negated. */
@@ -199,7 +182,7 @@ public class SymptomCatalog {
         String window = text.substring(windowStart, matchIdx);
         int clauseBreak = Math.max(window.lastIndexOf('.'), window.lastIndexOf(','));
         String clause = clauseBreak >= 0 ? window.substring(clauseBreak + 1) : window;
-        for (String neg : NEGATIONS) {
+        for (String neg : negations) {
             if (clause.contains(neg)) {
                 return true;
             }
