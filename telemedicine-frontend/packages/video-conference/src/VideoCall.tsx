@@ -8,12 +8,14 @@ export interface VideoCallProps {
   wsUrl: string;
   iceServers?: RTCIceServer[];
   onCallStateChange?: (connected: boolean) => void;
+  /** Fired when the user clicks "End consultation" (not on drops/unmount). */
+  onEnded?: () => void;
 }
 
 /** Self-contained one-to-one video call UI. Patient and physician join the
  *  same roomId (the appointment reference) to connect to each other. */
-export function VideoCall({ roomId, role, wsUrl, iceServers, onCallStateChange }: VideoCallProps) {
-  const call = useWebRtcCall({ roomId, role, wsUrl, iceServers, onCallStateChange });
+export function VideoCall({ roomId, role, wsUrl, iceServers, onCallStateChange, onEnded }: VideoCallProps) {
+  const call = useWebRtcCall({ roomId, role, wsUrl, iceServers, onCallStateChange, onEnded });
   return (
     <div className="vc-shell">
       <div className="vc-remote">

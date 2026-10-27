@@ -34,6 +34,9 @@ import { WithdrawConsentScreen } from "@/features/p38-withdraw-consent/WithdrawC
 import { ConsentWithdrawnEndedScreen } from "@/features/p39-consent-withdrawn-ended/ConsentWithdrawnEndedScreen";
 import { ConsultationDayStub } from "@/features/consultation-day-stub/ConsultationDayStub";
 import { VideoConsultationScreen } from "@/features/consultation-video/VideoConsultationScreen";
+import { ConsultationSummaryScreen } from "@/features/consultation-summary/ConsultationSummaryScreen";
+import { ConsultationSurveyScreen } from "@/features/consultation-survey/ConsultationSurveyScreen";
+import { ConsultationDetailsScreen } from "@/features/consultation-details/ConsultationDetailsScreen";
 import { ConfirmItsYouScreen } from "@/features/consultation-join/ConfirmItsYouScreen";
 import { ConsentsRecapScreen } from "@/features/consultation-join/ConsentsRecapScreen";
 import { DeviceCheckScreen } from "@/features/consultation-join/DeviceCheckScreen";
@@ -119,6 +122,9 @@ export function BookingRoutes() {
         <Route path="consultation-day" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsultationDayStub /></Shell></JourneyGuard>} />
         <Route path="video-consultation" element={<JourneyGuard requires={["authenticated"]}><Shell><VideoConsultationScreen /></Shell></JourneyGuard>} />
         <Route path="consultation-video" element={<JourneyGuard requires={["authenticated"]}><Shell><VideoConsultationScreen /></Shell></JourneyGuard>} />
+        <Route path="consultation-summary" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsultationSummaryScreen /></Shell></JourneyGuard>} />
+        <Route path="consultation-survey" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsultationSurveyScreen /></Shell></JourneyGuard>} />
+        <Route path="consultation-details" element={<JourneyGuard requires={["authenticated"]}><Shell><ConsultationDetailsScreen /></Shell></JourneyGuard>} />
 
         {/* Pre-join consultation flow (P-14 -> P-17) */}
         <Route path="join/confirm" element={<JourneyGuard requires={["authenticated"]}><Shell><ConfirmItsYouScreen /></Shell></JourneyGuard>} />

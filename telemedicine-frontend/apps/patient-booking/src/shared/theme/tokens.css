@@ -233,3 +233,8 @@ body {
     flex: 1;
   }
 }
+
+/* Spinner used by the post-consultation "Preparing…" document rows (P-19). */
+@keyframes pbspin {
+  to { transform: rotate(360deg); }
+}

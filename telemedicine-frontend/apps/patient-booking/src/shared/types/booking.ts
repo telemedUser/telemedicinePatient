@@ -208,6 +208,8 @@ export interface Appointment {
   slot: Slot;
   mode: ConsultationMode;
   feeClp: number;
+  /** The visit reason captured at booking (P-04), echoed by GET /appointments/{ref}. */
+  reason?: string;
   createdAt?: string;
 }
 

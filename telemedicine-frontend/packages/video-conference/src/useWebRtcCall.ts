@@ -8,6 +8,8 @@ export interface UseWebRtcCallOptions {
   /** Optional ICE servers (STUN/TURN). Empty by default for LAN-only. */
   iceServers?: RTCIceServer[];
   onCallStateChange?: (connected: boolean) => void;
+  /** Fired only when the user explicitly ends the call (the hang-up button), not on drops/unmount. */
+  onEnded?: () => void;
 }
 
 export interface WebRtcCallState {
@@ -29,7 +31,7 @@ export interface WebRtcCallState {
  * joining the same room connect to each other.
  */
 export function useWebRtcCall(opts: UseWebRtcCallOptions): WebRtcCallState {
-  const { roomId, role, wsUrl, iceServers = [], onCallStateChange } = opts;
+  const { roomId, role, wsUrl, iceServers = [], onCallStateChange, onEnded } = opts;
 
   const localRef = useRef<HTMLVideoElement>(null);
   const remoteRef = useRef<HTMLVideoElement>(null);
@@ -154,6 +156,9 @@ export function useWebRtcCall(opts: UseWebRtcCallOptions): WebRtcCallState {
     setStatus("Call ended");
     setJoined(false);
     onCallStateChange?.(false);
+    // Intentional hang-up: signal the caller so it can advance to the next screen regardless of
+    // whether a peer connection was ever established (e.g. ended before the other party joined).
+    onEnded?.();
   };
 
   return {
