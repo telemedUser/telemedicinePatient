@@ -113,7 +113,7 @@ export function ReasonScreen() {
       symptomText: "",
       selectedSymptoms: [],
       availableSymptoms: [],
-      duration: null,
+      duration: "1-3-days",
       severity: 0,
       files: [],
       measurements: {},

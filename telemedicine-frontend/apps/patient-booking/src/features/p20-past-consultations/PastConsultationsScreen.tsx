@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "@/shared/platform";
+import { useBooking } from "@/shared/state/BookingProvider";
 import { BASE_PATH } from "@/shared/wizard/useWizard";
 import { useStepMark } from "@/shared/components/useStepMark";
 import type { Appointment } from "@/shared/types/booking";
@@ -9,10 +10,17 @@ function fmt(iso?: string) {
   if (!iso) return "-";
   return new Date(iso).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
+/** Newest slot time first; unknown times sort last. */
+function byLatestFirst(a: Appointment, b: Appointment): number {
+  const ta = a.slot?.startsAt ? Date.parse(a.slot.startsAt) : -Infinity;
+  const tb = b.slot?.startsAt ? Date.parse(b.slot.startsAt) : -Infinity;
+  return tb - ta;
+}
 
 export function PastConsultationsScreen() {
   useStepMark("P-20" as never);
   const navigate = useNavigate();
+  const { state } = useBooking();
   const [items, setItems] = useState<Appointment[]>([]);
   const [selected, setSelected] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,12 +29,14 @@ export function PastConsultationsScreen() {
   function load() {
     setLoading(true);
     setError(false);
+    const pid = state.auth.userId ?? "patient-1";
+    const scope = `patientId=${encodeURIComponent(pid)}`;
     Promise.all([
-      apiFetch("/appointments?status=completed").then((r) => r.json()),
-      apiFetch("/appointments?status=cancelled").then((r) => r.json()),
+      apiFetch(`/appointments?status=completed&${scope}`).then((r) => r.json()),
+      apiFetch(`/appointments?status=cancelled&${scope}`).then((r) => r.json()),
     ])
       .then(([a, b]: { appointments: Appointment[] }[]) => {
-        setItems([...(a.appointments ?? []), ...(b.appointments ?? [])]);
+        setItems([...(a.appointments ?? []), ...(b.appointments ?? [])].sort(byLatestFirst));
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));

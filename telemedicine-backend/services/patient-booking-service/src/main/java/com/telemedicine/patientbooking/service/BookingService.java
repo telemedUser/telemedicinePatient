@@ -223,10 +223,29 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<Appointment> listAppointments(String statusFilter) {
-        List<AppointmentEntity> rows =
-                (statusFilter != null && !statusFilter.isBlank())
-                        ? appointmentRepository.findByStatus(statusFilter)
-                        : appointmentRepository.findAll();
+        return listAppointments(statusFilter, null);
+    }
+
+    /**
+     * List appointments, optionally scoped to a set of care subjects (the signed-in patient and
+     * their dependents) so "My care" shows only that account's consultations rather than everyone's.
+     * When {@code careSubjectIds} is null/empty, all appointments are returned (back-compat).
+     */
+    @Transactional(readOnly = true)
+    public List<Appointment> listAppointments(
+            String statusFilter, java.util.Collection<String> careSubjectIds) {
+        boolean scoped = careSubjectIds != null && !careSubjectIds.isEmpty();
+        boolean hasStatus = statusFilter != null && !statusFilter.isBlank();
+        List<AppointmentEntity> rows;
+        if (scoped && hasStatus) {
+            rows = appointmentRepository.findByCareSubjectIdInAndStatus(careSubjectIds, statusFilter);
+        } else if (scoped) {
+            rows = appointmentRepository.findByCareSubjectIdIn(careSubjectIds);
+        } else if (hasStatus) {
+            rows = appointmentRepository.findByStatus(statusFilter);
+        } else {
+            rows = appointmentRepository.findAll();
+        }
         return rows.stream().map(this::hydrate).toList();
     }
 

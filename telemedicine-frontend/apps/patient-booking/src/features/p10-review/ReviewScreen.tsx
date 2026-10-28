@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { Download } from "lucide-react";
 import { useBooking } from "@/shared/state/BookingProvider";
 import { useWizard } from "@/shared/wizard/useWizard";
 import { useStepMark } from "@/shared/components/useStepMark";
+import { buildPdf, downloadPdf, type PdfLine } from "@/shared/pdf/buildPdf";
 
 function inr(n: number) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
@@ -23,13 +25,78 @@ function openLabel(iso?: string): string {
   return open.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const CONSENTS = [
-  { id: "platform", title: "Platform terms v3.1", desc: "How the service works, payments and refunds." },
-  { id: "privacy", title: "Privacy notice v2.4", desc: "What we store, for how long, and your rights." },
-  { id: "clinical", title: "Clinical informed consent for virtual care v1.3", desc: "Limits of remote care; withdraw at any time." },
-  { id: "eligibility", title: "Share eligibility data for your insurance voucher", desc: "Needed to apply your voucher to this booking." },
+interface ConsentDoc {
+  id: string;
+  title: string;
+  desc: string;
+  filename: string;
+  body: string[];
+}
+
+const CONSENTS: ConsentDoc[] = [
+  {
+    id: "platform",
+    title: "Platform terms v3.1",
+    desc: "How the service works, payments and refunds.",
+    filename: "platform-terms-v3.1",
+    body: [
+      "These terms govern your use of the Connected Care telemedicine platform.",
+      "Bookings are confirmed once payment is authorised. Fees and any insurance voucher are shown before you pay; nothing is charged until you confirm.",
+      "You may reschedule or cancel up until the consultation starts. Refunds for eligible cancellations are returned to the original payment method.",
+      "The platform connects you with a licensed physician for a remote consultation. It is not a substitute for emergency care — in an emergency, call your local emergency number.",
+    ],
+  },
+  {
+    id: "privacy",
+    title: "Privacy notice v2.4",
+    desc: "What we store, for how long, and your rights.",
+    filename: "privacy-notice-v2.4",
+    body: [
+      "This notice explains how Connected Care processes your personal and health data.",
+      "We store the information you provide for a consultation (symptoms, history, documents) and the records a physician creates (notes, prescriptions, certificates) for the retention period required by applicable healthcare regulations.",
+      "Your data is used to deliver care, process payments and meet legal obligations. It is not sold. Access is limited to your care team and authorised staff.",
+      "You have the right to access, correct, and request deletion of your data, and to withdraw consent at any time from the Consent centre.",
+    ],
+  },
+  {
+    id: "clinical",
+    title: "Clinical informed consent for virtual care v1.3",
+    desc: "Limits of remote care; withdraw at any time.",
+    filename: "clinical-consent-v1.3",
+    body: [
+      "You are consenting to a clinical consultation delivered over video or audio.",
+      "Remote care has limitations: the physician cannot physically examine you, and some conditions may require an in-person visit, tests, or referral. The physician will tell you if remote care is not appropriate.",
+      "A clinical record, and where relevant a prescription, medical certificate or referral, may be produced and shared with you and the relevant systems.",
+      "You may withdraw this consent at any time; doing so during a call will end the consultation.",
+    ],
+  },
+  {
+    id: "eligibility",
+    title: "Share eligibility data for your insurance voucher",
+    desc: "Needed to apply your voucher to this booking.",
+    filename: "eligibility-data-sharing",
+    body: [
+      "To apply an insurance voucher to this booking, Connected Care needs to share limited eligibility data with your insurer or scheme.",
+      "The data shared is restricted to what is necessary to validate the voucher (policy reference, eligibility status and the booking amount). No clinical details are shared for this purpose.",
+      "If you do not consent, you can still book and pay the full fee without the voucher.",
+    ],
+  },
 ];
 const HOLD_SECONDS = 9 * 60 + 16;
+
+/** Build and download a dummy consent document PDF from its title + body paragraphs. */
+function downloadConsent(c: ConsentDoc): void {
+  const lines: PdfLine[] = [
+    { text: "Connected Care", style: "heading" },
+    { text: c.title, style: "title" },
+    { text: c.desc, style: "muted" },
+    { style: "rule" },
+    ...c.body.flatMap((p): PdfLine[] => [{ text: p, style: "normal" }, { style: "spacer" }]),
+    { style: "rule" },
+    { text: "This is a sample consent document for the Connected Care demo.", style: "muted" },
+  ];
+  downloadPdf(buildPdf(lines), c.filename);
+}
 
 export function ReviewScreen() {
   useStepMark("P-10");
@@ -127,7 +194,15 @@ export function ReviewScreen() {
               <span style={{ display: "block", font: "600 14px var(--font-family)", color: "var(--color-heading)" }}>{c.title}</span>
               <span style={{ display: "block", fontSize: 13, color: "var(--color-muted)" }}>{c.desc}</span>
             </span>
-            <span aria-hidden="true" style={{ color: "var(--color-primary)" }}>&#128196;</span>
+            <button
+              type="button"
+              aria-label={`Download ${c.title}`}
+              title="Download document (PDF)"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadConsent(c); }}
+              style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", color: "var(--color-primary)", font: "600 12px var(--font-family)", padding: "4px 6px" }}
+            >
+              <Download size={16} /> PDF
+            </button>
           </label>
         ))}
       </div>

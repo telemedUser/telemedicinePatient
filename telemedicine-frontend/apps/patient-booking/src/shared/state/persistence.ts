@@ -13,12 +13,16 @@ export function serializeState(state: BookingState): string {
 }
 
 export function deserializeState(raw: string | null): BookingState {
-  if (!raw) return createInitialBookingState();
+  const fresh = createInitialBookingState();
+  if (!raw) return fresh;
   try {
     const parsed = JSON.parse(raw) as Partial<BookingState>;
-    return { ...createInitialBookingState(), ...parsed };
+    // Auth is session-scoped: a page reload must not resurrect a signed-in session. Always restore
+    // as unauthenticated so the sign-in gate (and the My care / Help nav) require a real sign-in,
+    // while the rest of the in-progress booking draft is preserved.
+    return { ...fresh, ...parsed, auth: fresh.auth };
   } catch {
-    return createInitialBookingState();
+    return fresh;
   }
 }
 

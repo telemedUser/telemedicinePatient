@@ -236,8 +236,19 @@ public class BookingController {
     /* ---- P-13 / P-37 Manage appointments ---- */
 
     @GetMapping("/appointments")
-    public Map<String, Object> listAppointments(@RequestParam(required = false) String status) {
-        return Map.of("appointments", booking.listAppointments(status));
+    public Map<String, Object> listAppointments(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String patientId) {
+        // When a patientId is supplied, scope to that account's care subjects (self + dependents)
+        // so "My care" shows only the signed-in user's consultations, not everyone's.
+        java.util.List<String> careSubjects = null;
+        if (patientId != null && !patientId.isBlank()) {
+            final java.util.List<String> ids = new java.util.ArrayList<>();
+            ids.add(patientId);
+            reference.dependents().forEach(d -> ids.add(d.id()));
+            careSubjects = ids;
+        }
+        return Map.of("appointments", booking.listAppointments(status, careSubjects));
     }
 
     @GetMapping("/appointments/{reference}")

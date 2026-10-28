@@ -48,14 +48,16 @@ export function BookingChrome({ children }: { children: ReactNode }) {
         >
           <strong style={{ color: "var(--color-primary)", fontSize: 20 }}>{t("app.title")}</strong>
           <div className="pb-chrome-spacer" style={{ flex: 1 }} />
-          <nav aria-label="Main" className="pb-chrome-nav" style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="pb-btn pb-btn-secondary" onClick={() => navigate(BASE_PATH + "/home")}>
-              {t("nav.myCare")}
-            </button>
-            <button type="button" className="pb-btn pb-btn-secondary" onClick={() => navigate(BASE_PATH + "/help")}>
-              {t("nav.help")}
-            </button>
-          </nav>
+          {authed && (
+            <nav aria-label="Main" className="pb-chrome-nav" style={{ display: "flex", gap: 8 }}>
+              <button type="button" className="pb-btn pb-btn-secondary" onClick={() => navigate(BASE_PATH + "/home")}>
+                {t("nav.myCare")}
+              </button>
+              <button type="button" className="pb-btn pb-btn-secondary" onClick={() => navigate(BASE_PATH + "/help")}>
+                {t("nav.help")}
+              </button>
+            </nav>
+          )}
           {authed && (
             <div
               aria-label="Signed in"

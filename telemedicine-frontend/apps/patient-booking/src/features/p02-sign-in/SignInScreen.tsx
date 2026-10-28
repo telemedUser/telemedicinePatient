@@ -41,11 +41,6 @@ export function SignInScreen() {
     await onAuthenticated(res.userId!, res.hasRecord);
   }
 
-  async function handleClaveUnica() {
-    const res = await authApi.signInWithClaveUnica();
-    if (res.ok) await onAuthenticated(res.userId!, res.hasRecord);
-  }
-
   if (noRecord) {
     return (
       <section data-screen="P-02" style={wrap}>
@@ -114,14 +109,6 @@ export function SignInScreen() {
         </button>
         <button type="submit" className="pb-btn pb-btn-primary" disabled={attempts.locked} style={{ minHeight: 52 }}>
           Sign in
-        </button>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#8a94a0", fontSize: 13 }}>
-          <span style={{ flex: 1, height: 1, background: "var(--color-border)" }} />
-          or
-          <span style={{ flex: 1, height: 1, background: "var(--color-border)" }} />
-        </div>
-        <button type="button" className="pb-btn pb-btn-secondary" onClick={handleClaveUnica} style={{ minHeight: 52 }}>
-          Continue with ClaveÚnica
         </button>
       </form>
     </section>

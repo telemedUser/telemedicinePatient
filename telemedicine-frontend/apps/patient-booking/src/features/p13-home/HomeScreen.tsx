@@ -20,6 +20,12 @@ function timeLabel(iso?: string): string {
 function modeLabel(m?: string) {
   return m === "audio" ? "Audio" : "Video";
 }
+/** Newest slot time first; unknown times sort last. */
+function byLatestFirst(a: Appointment, b: Appointment): number {
+  const ta = a.slot?.startsAt ? Date.parse(a.slot.startsAt) : -Infinity;
+  const tb = b.slot?.startsAt ? Date.parse(b.slot.startsAt) : -Infinity;
+  return tb - ta;
+}
 
 export function HomeScreen() {
   useStepMark("P-13" as never);
@@ -36,13 +42,20 @@ export function HomeScreen() {
   function load() {
     setLoading(true);
     setError(false);
+    // Scope to the signed-in account so My care shows only this user's consultations.
+    const pid = state.auth.userId ?? "patient-1";
+    const scope = `patientId=${encodeURIComponent(pid)}`;
     void Promise.all([
-      apiFetch("/appointments?status=confirmed").then((r) => r.json()),
-      apiFetch("/appointments").then((r) => r.json()),
+      apiFetch(`/appointments?status=confirmed&${scope}`).then((r) => r.json()),
+      apiFetch(`/appointments?${scope}`).then((r) => r.json()),
     ])
       .then(([conf, all]: [{ appointments: Appointment[] }, { appointments: Appointment[] }]) => {
-        setUpcoming(conf.appointments);
-        setPast(all.appointments.filter((a) => a.status === "completed" || a.status === "cancelled"));
+        setUpcoming([...(conf.appointments ?? [])].sort(byLatestFirst));
+        setPast(
+          (all.appointments ?? [])
+            .filter((a) => a.status === "completed" || a.status === "cancelled")
+            .sort(byLatestFirst),
+        );
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
