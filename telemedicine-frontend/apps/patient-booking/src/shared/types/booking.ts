@@ -136,6 +136,8 @@ export interface TriageResult {
   videoRecommended: boolean;
   noEmergencySigns: boolean;
   urgency?: string;
+  /** One short patient-facing sentence from the AI triage. */
+  rationale?: string;
   answers: TriageAnswerRow[];
 }
 

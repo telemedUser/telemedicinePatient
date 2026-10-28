@@ -101,8 +101,10 @@ public class BookingController {
     /* ---- P-06 Triage ---- */
 
     @PostMapping("/triage/start")
-    public Map<String, Object> triageStart() {
-        return triage.startTriage();
+    public Map<String, Object> triageStart(@RequestBody(required = false) Map<String, Object> body) {
+        // Body carries the P-04 symptom context (symptomText, symptoms[], duration, severity) so the
+        // AI triage can tailor the questions. Tolerates an empty/absent body.
+        return triage.startTriage(body != null ? body : Map.of());
     }
 
     @PostMapping("/triage/answer")

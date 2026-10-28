@@ -5,6 +5,13 @@ import { useWizard } from "@/shared/wizard/useWizard";
 import { useStepMark } from "@/shared/components/useStepMark";
 import type { TriageQuestion, TriageResult } from "@/shared/types/booking";
 
+/** Map the triage urgency code to a patient-facing label. */
+function urgencyLabel(u?: string): string {
+  if (u === "urgent") return "As soon as possible";
+  if (u === "routine") return "Routine";
+  return "Same day";
+}
+
 export function TriageScreen() {
   useStepMark("P-06");
   const { state, update } = useBooking();
@@ -21,7 +28,18 @@ export function TriageScreen() {
     setBusy(true);
     setError(false);
     try {
-      const res = await apiFetch("/triage/start", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      // Send the P-04 symptom context so the AI tailors the quick-check questions.
+      const context = {
+        symptomText: state.symptomText ?? "",
+        symptoms: (state.selectedSymptoms ?? []).map((s) => s.label),
+        duration: state.duration ?? "",
+        severity: state.severity ?? 0,
+      };
+      const res = await apiFetch("/triage/start", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(context),
+      });
       if (!res.ok) throw new Error();
       const data = (await res.json()) as { sessionId: string; question: TriageQuestion };
       setTriage({ phase: "question", sessionId: data.sessionId, question: data.question });
@@ -68,10 +86,10 @@ export function TriageScreen() {
 
       {triage.phase === "disclosure" && (
         <div className="pb-card" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ font: "700 18px var(--font-family)", color: "var(--color-heading)" }}>Up to 5 quick questions</div>
+          <div style={{ font: "700 18px var(--font-family)", color: "var(--color-heading)" }}>Up to 3 quick questions</div>
           <div style={{ fontSize: 15, color: "#3a4453" }}>Your answers help suggest the right doctor and how soon to be seen.</div>
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8, fontSize: 14, color: "#3a4453" }}>
-            <li>✓ The questions are AI-assisted.</li>
+            <li>✓ The questions are AI-assisted, based on what you told us.</li>
             <li>✓ Your answers go only to your doctor — never used to train AI models.</li>
             <li>✓ A doctor makes every decision.</li>
           </ul>
@@ -108,9 +126,14 @@ export function TriageScreen() {
 
       {triage.phase === "result" && triage.result && (
         <div className="pb-card" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ font: "700 22px var(--font-family)", color: "var(--color-heading)" }}>{triage.result.recommendedSpecialty} · Same day</div>
+          <div style={{ font: "700 22px var(--font-family)", color: "var(--color-heading)" }}>
+            {triage.result.recommendedSpecialty} · {urgencyLabel(triage.result.urgency)}
+          </div>
           {triage.result.videoRecommended && <div style={{ color: "#0068ac", fontWeight: 600 }}>▶ Video recommended</div>}
-          {triage.result.noEmergencySigns && <div style={{ color: "#14683d", fontWeight: 600 }}>✓ No emergency signs reported</div>}
+          {triage.result.rationale && <div style={{ fontSize: 14.5, color: "#3a4453", lineHeight: 1.6 }}>{triage.result.rationale}</div>}
+          {triage.result.noEmergencySigns
+            ? <div style={{ color: "#14683d", fontWeight: 600 }}>✓ No emergency signs reported</div>
+            : <div style={{ color: "var(--color-danger-text)", fontWeight: 600 }}>⚠ You reported a possible emergency sign — see the advice below.</div>}
           <div style={{ background: "#f6f5f2", borderRadius: 12, padding: "4px 14px" }}>
             {triage.result.answers.map((a, i) => (
               <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: i < triage.result!.answers.length - 1 ? "1px solid #e6e5e1" : "none", fontSize: 14, color: "#3a4453" }}>

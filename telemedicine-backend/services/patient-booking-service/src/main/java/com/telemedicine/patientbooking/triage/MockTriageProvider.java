@@ -43,7 +43,7 @@ public class MockTriageProvider implements TriageProvider {
     }
 
     @Override
-    public Map<String, Object> startTriage() {
+    public Map<String, Object> startTriage(Map<String, Object> context) {
         String sessionId = UUID.randomUUID().toString();
         sessions.put(sessionId, new Session());
         Map<String, Object> out = new LinkedHashMap<>();

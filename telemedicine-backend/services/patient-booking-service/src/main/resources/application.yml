@@ -57,6 +57,15 @@ telemedicine:
   integration:
     config-service-base-url: ${CONFIG_SERVICE_URL:http://config-service:8112}
 
+# AI triage (P-06). When no API key is set the provider falls back to a built-in question set, so
+# the flow works without Claude in local/dev; in the deployed env ANTHROPIC_API_KEY is injected.
+triage:
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
+    model: ${ANTHROPIC_MODEL:claude-3-5-haiku-latest}
+    max-questions: 3
+
 # CORS origins allowed for local dev (frontend dev server / Vite proxy).
 patient-booking:
   cors:
