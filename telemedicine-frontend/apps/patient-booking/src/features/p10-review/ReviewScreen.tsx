@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { useBooking } from "@/shared/state/BookingProvider";
 import { useWizard } from "@/shared/wizard/useWizard";
 import { useStepMark } from "@/shared/components/useStepMark";
-import { buildPdf, downloadPdf, type PdfLine } from "@/shared/pdf/buildPdf";
+import { buildPdf, downloadPdf, viewPdf, type PdfLine } from "@/shared/pdf/buildPdf";
 
 function inr(n: number) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
@@ -84,8 +84,8 @@ const CONSENTS: ConsentDoc[] = [
 ];
 const HOLD_SECONDS = 9 * 60 + 16;
 
-/** Build and download a dummy consent document PDF from its title + body paragraphs. */
-function downloadConsent(c: ConsentDoc): void {
+/** Build a consent document PDF (A4) from its title + body paragraphs. */
+function buildConsentPdf(c: ConsentDoc): Blob {
   const lines: PdfLine[] = [
     { text: "Connected Care", style: "heading" },
     { text: c.title, style: "title" },
@@ -95,7 +95,17 @@ function downloadConsent(c: ConsentDoc): void {
     { style: "rule" },
     { text: "This is a sample consent document for the Connected Care demo.", style: "muted" },
   ];
-  downloadPdf(buildPdf(lines), c.filename);
+  return buildPdf(lines);
+}
+
+/** Open the consent document in a new browser tab (view). */
+function viewConsent(c: ConsentDoc): void {
+  viewPdf(buildConsentPdf(c));
+}
+
+/** Download the consent document as a .pdf file. */
+function downloadConsent(c: ConsentDoc): void {
+  downloadPdf(buildConsentPdf(c), c.filename);
 }
 
 export function ReviewScreen() {
@@ -194,15 +204,26 @@ export function ReviewScreen() {
               <span style={{ display: "block", font: "600 14px var(--font-family)", color: "var(--color-heading)" }}>{c.title}</span>
               <span style={{ display: "block", fontSize: 13, color: "var(--color-muted)" }}>{c.desc}</span>
             </span>
-            <button
-              type="button"
-              aria-label={`Download ${c.title}`}
-              title="Download document (PDF)"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadConsent(c); }}
-              style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", color: "var(--color-primary)", font: "600 12px var(--font-family)", padding: "4px 6px" }}
-            >
-              <Download size={16} /> PDF
-            </button>
+            <span style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 2 }}>
+              <button
+                type="button"
+                aria-label={`View ${c.title}`}
+                title="View document (opens in a new tab)"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); viewConsent(c); }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", color: "var(--color-primary)", font: "600 12px var(--font-family)", padding: "4px 6px" }}
+              >
+                <Eye size={16} /> View
+              </button>
+              <button
+                type="button"
+                aria-label={`Download ${c.title}`}
+                title="Download document (PDF)"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); downloadConsent(c); }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", color: "var(--color-primary)", font: "600 12px var(--font-family)", padding: "4px 6px" }}
+              >
+                <Download size={16} /> PDF
+              </button>
+            </span>
           </label>
         ))}
       </div>
