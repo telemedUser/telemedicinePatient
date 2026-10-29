@@ -36,6 +36,7 @@ public class LlmTriageProvider implements TriageProvider {
 
     private final ObjectMapper objectMapper;
     private final String apiKey;
+    private final String workspaceId;
     private final String baseUrl;
     private final String model;
     private final int maxQuestions;
@@ -45,11 +46,13 @@ public class LlmTriageProvider implements TriageProvider {
     public LlmTriageProvider(
             ObjectMapper objectMapper,
             @Value("${triage.anthropic.api-key:}") String apiKey,
+            @Value("${triage.anthropic.workspace-id:}") String workspaceId,
             @Value("${triage.anthropic.base-url:https://api.anthropic.com}") String baseUrl,
-            @Value("${triage.anthropic.model:claude-3-5-haiku-latest}") String model,
+            @Value("${triage.anthropic.model:claude-haiku-4-5-20251001}") String model,
             @Value("${triage.anthropic.max-questions:3}") int maxQuestions) {
         this.objectMapper = objectMapper;
         this.apiKey = apiKey == null ? "" : apiKey.trim();
+        this.workspaceId = workspaceId == null ? "" : workspaceId.trim();
         this.baseUrl = baseUrl;
         this.model = model;
         this.maxQuestions = Math.max(1, Math.min(3, maxQuestions));
@@ -189,8 +192,14 @@ public class LlmTriageProvider implements TriageProvider {
         String body =
                 anthropic.post()
                         .uri("/v1/messages")
-                        .header("x-api-key", apiKey)
-                        .header("anthropic-version", "2023-06-01")
+                        .headers(h -> {
+                            h.set("x-api-key", apiKey);
+                            h.set("anthropic-version", "2023-06-01");
+                            // Workspace-scoped keys must name the workspace on every request.
+                            if (!workspaceId.isEmpty()) {
+                                h.set("anthropic-workspace-id", workspaceId);
+                            }
+                        })
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(payload.toString())
                         .retrieve()
